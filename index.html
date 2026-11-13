@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Escala · Renascer Praise Jundiaí</title>
 <meta name="theme-color" content="#000000">
+<meta name="color-scheme" content="light">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="Praise JDI">
@@ -26,20 +27,8 @@
   --shadow:0 1px 2px rgba(18,26,44,.05),0 4px 14px rgba(18,26,44,.05);
   color-scheme:light;
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#0c111d; --surface:#141b2b; --surface-2:#1a2336; --ink:#e7ebf4; --muted:#98a2b9; --line:#242e45;
-  --accent:#eef1f7; --accent-ink:#0c111d; --accent-soft:#262f45;
-  --hero:#080c16; --hero-ink:#ffffff; --hero-muted:#8590aa;
-  --g:#4fc98b; --g-bg:#11301f; --y:#f0b54d; --y-bg:#33260e; --r:#ff7b68; --r-bg:#3b1712;
-  --shadow:0 1px 2px rgba(0,0,0,.3); color-scheme:dark;
-}}
-:root[data-theme="dark"]{
-  --bg:#0c111d; --surface:#141b2b; --surface-2:#1a2336; --ink:#e7ebf4; --muted:#98a2b9; --line:#242e45;
-  --accent:#eef1f7; --accent-ink:#0c111d; --accent-soft:#262f45;
-  --hero:#080c16; --hero-ink:#ffffff; --hero-muted:#8590aa;
-  --g:#4fc98b; --g-bg:#11301f; --y:#f0b54d; --y-bg:#33260e; --r:#ff7b68; --r-bg:#3b1712;
-  --shadow:0 1px 2px rgba(0,0,0,.3); color-scheme:dark;
-}
+
+
 *{box-sizing:border-box}
 html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--font-b);-webkit-font-smoothing:antialiased}
@@ -345,8 +334,6 @@ select.sm{padding:5px 8px;font-size:13px;border-radius:8px}
 .sp-btn{background:#fff;color:#000;border:0;border-radius:999px;padding:16px;font:inherit;font-weight:800;font-size:16px;cursor:pointer;letter-spacing:-.01em}
 .sp-btn:hover{background:#e6e6e6}
 .phone:has(.splash){background:#1a1a1a}
-:root[data-theme="dark"] .phone{background:#2b3245;box-shadow:0 0 0 1px #3a4360,0 20px 50px rgba(0,0,0,.5)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .phone{background:#2b3245;box-shadow:0 0 0 1px #3a4360,0 20px 50px rgba(0,0,0,.5)}}
 .dica{display:flex;flex-direction:column;gap:8px;align-items:flex-start;padding:16px}
 .dica p{margin:0;font-size:14px;color:var(--muted)}
 .chipx{display:inline-flex;gap:6px;align-items:center;font-size:13px;padding:4px 10px;border-radius:999px;background:var(--surface-2);border:0;cursor:pointer;color:var(--ink)}
