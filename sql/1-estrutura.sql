@@ -183,7 +183,8 @@ language sql stable security definer set search_path = public as $$
     join public.eventos e on e.id = v.evento_id
     join public.pessoas p on p.id = p_pessoa
     where v.id = p_vaga
-      and v.funcao = any (p.funcoes)
+      -- trocas por grupo: qualquer músico cobre instrumento, qualquer voz cobre voz
+      and exists (select 1 from unnest(p.funcoes) f where (f in ('MINISTRO', 'BACKING')) = (v.funcao in ('MINISTRO', 'BACKING')))
       and not (e.data = any (p.indisp))
       and not exists (select 1 from public.vagas v2 join public.eventos e2 on e2.id = v2.evento_id
                       where v2.pessoa_id = p_pessoa and v2.id <> v.id and v2.status <> 'recusado'

@@ -159,7 +159,8 @@ main{max-width:1040px;margin:0 auto;padding:26px 20px 70px;display:flex;flex-dir
 .sub-op{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:12px;cursor:pointer}
 .sub-op:has(input:checked){border-color:var(--ink);background:var(--surface-2)}
 .sub-op .av{width:30px;height:30px;font-size:12px}.sub-op .av::after{display:none}
-.sub-n{flex:1;font-weight:600}
+.sub-n{flex:1;font-weight:600;display:flex;flex-direction:column}
+.sub-f{font-weight:500;font-size:11px;color:var(--muted);letter-spacing:.03em}
 .pedido{border-color:var(--y);box-shadow:0 0 0 1px var(--y)}
 .enviado{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px}
 .enviado p{margin:0}
@@ -392,6 +393,9 @@ const FUNCOES = [...VOZES, ...INSTRUMENTOS];            /* o que cada pessoa sab
 const PAPEIS = [...VOZES, ...INSTRUMENTOS];          /* posições na escala */
 const habilidade = f => f;
 const podeFazer = (p, f) => p.funcoes.includes(habilidade(f));
+/* nas trocas vale o grupo: qualquer músico cobre qualquer instrumento, qualquer voz cobre qualquer voz */
+const ehVoz = f => VOZES.includes(f);
+const podeTrocar = (p, f) => p.funcoes.some(x => ehVoz(x) === ehVoz(f));
 function faltando(ev){ const c = {}; ev.vagas.filter(v => v.status === "aberta").forEach(v => c[v.funcao] = (c[v.funcao]||0)+1);
   return Object.entries(c).map(([f, n]) => n > 1 ? `${n} ${f}` : f); }
 const EQUIPE_PADRAO = () => [{funcao:"MINISTRO",pid:""},{funcao:"BACKING",pid:""},{funcao:"BACKING",pid:""},{funcao:"KEYS",pid:""},{funcao:"GUITAR",pid:""},{funcao:"BASS",pid:""},{funcao:"DRUM",pid:""}];
@@ -515,7 +519,7 @@ function rowLider(ev, v, passado){
       acts += `<a class="btn sm wa" href="${waLink(p, msgConvite(ev, v))}" target="_blank" rel="noopener">${s.c==="r"?"Cobrar":"Lembrar"} no WhatsApp</a>
                <button class="btn sm ghost" data-act="msg" data-e="${ev.id}" data-v="${v.id}">Ver mensagem</button>`;
     if (v.status==="recusado" || v.status==="aberta" || v.status==="trocando") {
-      const opts = state.pessoas.filter(o => o.id!==v.pessoaId && podeFazer(o, v.funcao) && !o.indisp.includes(ev.data) && !escaladoNoHorario(o.id, ev))
+      const opts = state.pessoas.filter(o => o.id!==v.pessoaId && podeTrocar(o, v.funcao) && !o.indisp.includes(ev.data) && !escaladoNoHorario(o.id, ev))
         .map(o => `<option value="${o.id}">${esc(o.nome)}</option>`).join("");
       acts += opts ? `<select class="sm" data-act="subst" data-e="${ev.id}" data-v="${v.id}" aria-label="Escolher ${esc(v.funcao)}"><option value="">${v.status==="aberta" ? "Escolher quem vai…" : "Escolher substituto…"}</option>${opts}</select>`
                    : `<span class="pill y">Ninguém livre em ${esc(v.funcao)}</span>`;
@@ -812,7 +816,8 @@ function telaLogin(){
     </div>`;
 }
 function elegiveis(ev, v){
-  return state.pessoas.filter(p => p.id !== v.pessoaId && podeFazer(p, v.funcao) && !p.indisp.includes(ev.data) && !escaladoNoHorario(p.id, ev) && !(v.recusaram || []).includes(p.id));
+  return state.pessoas.filter(p => p.id !== v.pessoaId && podeTrocar(p, v.funcao) && !p.indisp.includes(ev.data) && !escaladoNoHorario(p.id, ev) && !(v.recusaram || []).includes(p.id))
+    .sort((a, b) => b.funcoes.includes(v.funcao) - a.funcoes.includes(v.funcao) || a.nome.localeCompare(b.nome));
 }
 function msgPedido(ev, v, p){
   return `Oi, ${primeiro(p.nome)}! Não vou conseguir servir ${naFuncao(v.funcao)} do ${quando(ev)}. Você consegue me cobrir? Se puder, aceite o pedido no app da escala. Obrigado!`;
@@ -822,7 +827,7 @@ function modalTroca(ev, v){
   modal(`<h3>Quem pode te substituir?</h3>
     <p>Escolha quem você quer pedir. Depois do pedido, abre o WhatsApp para vocês conversarem. <b>Você continua na escala até a pessoa aceitar.</b></p>
     <textarea id="motivo" placeholder="Motivo (ex.: viagem, plantão no trabalho…)" aria-label="Motivo">${esc(v.motivo || "")}</textarea>
-    <div class="subs">${ops.map(p => `<label class="sub-op"><input type="radio" name="sub" value="${p.id}">${avatar(p)}<span class="sub-n">${esc(p.nome)}</span></label>`).join("")
+    <div class="subs">${ops.map(p => `<label class="sub-op"><input type="radio" name="sub" value="${p.id}">${avatar(p)}<span class="sub-n">${esc(p.nome)}<small class="sub-f">${p.funcoes.filter(f => ehVoz(f) === ehVoz(v.funcao)).join(" · ")}</small></span></label>`).join("")
       || `<div class="empty">Ninguém da sua função está livre nesse horário.</div>`}</div>
     <div class="foot" style="justify-content:space-between;flex-wrap:wrap">
       <button class="btn ghost sm" data-act="avisar-lider" data-e="${ev.id}" data-v="${v.id}">Não achei ninguém, avisar o líder</button>
@@ -842,7 +847,7 @@ function viewVoluntario(){
     futuros.forEach(e => e.vagas.forEach(v => {
       if (v.status === "trocando" && v.pedidoPara === euId) pedidos.push([e, v]);
       if (v.pessoaId === euId) minhas.push([e, v]);
-      else if (!ehTodos(v) && (v.status==="recusado" || v.status==="aberta") && podeFazer(eu, v.funcao) && !eu.indisp.includes(e.data) && !escaladoNoHorario(euId, e)) trocas.push([e, v]);
+      else if (!ehTodos(v) && (v.status==="recusado" || v.status==="aberta") && podeTrocar(eu, v.funcao) && !eu.indisp.includes(e.data) && !escaladoNoHorario(euId, e)) trocas.push([e, v]);
     }));
     const pend = minhas.filter(([e, v]) => v.status === "pendente").length + pedidos.length;
     const card = ([e, v]) => { const s = situacao(e, v);
