@@ -176,6 +176,68 @@ body.min .splash{min-height:100vh;min-height:100dvh}
 .topbtn{color:var(--hero-muted)}
 .topbtn:hover{background:rgba(255,255,255,.08);color:var(--hero-ink)}
 .link-row{gap:6px}
+/* ===== diagramação v2 ===== */
+.duo{display:flex;flex-direction:column;gap:14px}
+.duo-main{display:flex;flex-direction:column;gap:12px;min-width:0}
+.duo-main > .label:first-child{margin-top:0}
+@media (min-width:1000px){
+  main{max-width:1240px}
+  .top{max-width:1240px}
+  .duo{display:grid;grid-template-columns:380px minmax(0,1fr);gap:24px;align-items:start}
+  .duo-cal{position:sticky;top:84px}
+  .duo-cal .cal-d{min-height:50px}
+  .duo-cal .cal-d .num{font-size:15px}
+  .duo-cal .cal-leg{flex-direction:column;gap:6px}
+  .duo-cal .dica-cal{margin-left:0}
+}
+.chip-s{font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px}
+.chip-s.r{background:var(--r-bg);color:var(--r)}.chip-s.y{background:var(--y-bg);color:var(--y)}
+.resumo{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.dt-inline{display:none;font-weight:600;color:var(--ink)}
+.ev.mini .ev-tg{padding:2px 0}
+.row .acts{gap:6px}
+.vcard{padding:14px}
+.vcard .when{font-size:18px}
+.vcard .btn.big{padding:11px 14px;font-size:15px}
+.eqrow{grid-template-columns:112px minmax(0,1fr) 28px}
+@media (max-width:640px){
+  header{position:static}
+  .top{padding:10px 14px;gap:10px}
+  .brand{font-size:17px}.brand .mark{width:26px;height:26px}
+  .sync{display:none}
+  .topbtn{padding:4px 8px;font-size:12px}
+  nav{order:3;width:100%;justify-content:stretch}
+  nav a{flex:1;text-align:center;padding:8px 6px;font-size:13px}
+  main{padding:16px 12px 60px}
+  .head h2{font-size:23px}
+  .head p{font-size:14px}
+  .ev .date{display:none}
+  .ev{grid-template-columns:1fr}
+  .dt-inline{display:inline}
+  .ev-body{padding:12px 14px 6px}
+  .ev-tg h3{font-size:16px}
+  .ring svg{width:34px;height:34px}
+  .row{grid-template-columns:32px minmax(0,1fr) auto;gap:4px 10px;padding:9px 0}
+  .row .av{width:32px;height:32px;font-size:12px}
+  .row .right{grid-column:auto;justify-content:flex-end}
+  .row .acts{grid-column:1 / -1;padding-left:42px}
+  .pill{font-size:11px;padding:3px 8px}
+  .stat{padding:10px 12px}.stat b{font-size:24px}.stat small{font-size:12px}
+  .lbl-row .btn{padding:4px 6px}
+  .eqrow{grid-template-columns:104px minmax(0,1fr) 26px}
+  .cal{padding:10px 8px}
+  .brand{flex:1}
+  .topbtn[href]{display:none}
+  .ev-tg{flex-wrap:nowrap;gap:10px}
+  .ev-tg .t{min-width:0;flex:1}
+  .ev-tg .ring{gap:6px;font-size:11px;line-height:1.2}
+  .ev-tg .ring b{font-size:14px}
+  .ev-tg .sec-chev{width:28px;height:28px;font-size:17px;flex:none}
+  .ev-top{gap:8px}
+  .sec-btn{flex-wrap:nowrap;padding:14px 16px}
+  .sec-btn .sec-n{display:none}
+  .sec-btn .tags{overflow:hidden}
+}
 .av.vazio{background:var(--surface-2);color:var(--muted);border:1.5px dashed var(--muted)}
 .ring{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted)}
 .ring svg{display:block}
@@ -404,7 +466,14 @@ function msgConvite(ev, v){
   const p = pessoa(v.pessoaId), pz = prazo(ev);
   return `Olá, ${primeiro(p.nome)}! Você está na escala ${naFuncao(v.funcao)}${ehTodos(v) ? " (todas as vozes)" : ""} do ${quando(ev)}.\n\nConfirme no app da escala até ${DIA_LONGO[pz.getDay()].toLowerCase()}, ${pad(pz.getDate())}/${pad(pz.getMonth()+1)}, às ${fmtHora(`${pad(pz.getHours())}:${pad(pz.getMinutes())}`)}.\nSe não puder, toque em "Não posso" e escolha quem vai te substituir.\n\nObrigado por servir!`;
 }
-const waLink = (p, msg) => `https://wa.me/${(p.whats||"").replace(/\D/g,"")}?text=${encodeURIComponent(msg)}`;
+/* No Android, abre direto o WhatsApp comum (com.whatsapp), mesmo com o Business instalado.
+   Se o WhatsApp comum não estiver instalado, cai no link normal do wa.me. */
+const ANDROID = /Android/i.test(navigator.userAgent);
+const waLink = (p, msg) => {
+  const num = (p.whats || "").replace(/\D/g, ""), txt = encodeURIComponent(msg);
+  const web = `https://wa.me/${num}?text=${txt}`;
+  return ANDROID ? `intent://send?phone=${num}&text=${txt}#Intent;scheme=whatsapp;package=com.whatsapp;S.browser_fallback_url=${encodeURIComponent(web)};end` : web;
+};
 function escaladoNoHorario(pid, ev){
   return state.eventos.some(e => e.data === ev.data && e.hora === ev.hora && e.vagas.some(v => v.pessoaId === pid && v.status !== "recusado"));
 }
@@ -463,14 +532,21 @@ function cardEvento(ev, passado){
   normais.forEach(v => c[situacao(ev, v).c]++);
   const pz = prazo(ev), encerrado = new Date() > pz, ord = {r:0,y:1,g:2};
   const vagas = passado ? normais : [...normais].sort((a,b) => ord[situacao(ev,a).c] - ord[situacao(ev,b).c]);
+  const on = painelAbertos[ev.id] ?? false;
+  const resumo = passado ? "" : [c.r ? `<span class="chip-s r">${c.r} sem resposta/troca</span>` : "", c.y ? `<span class="chip-s y">${c.y} aguardando</span>` : ""].join("");
+  const topo = `<button class="ev-tg" data-act="tg-painel" data-e="${ev.id}" aria-expanded="${on}">
+      <div class="t"><h3>${esc(ev.nome)}</h3>
+        <div class="meta"><span class="dt-inline">${fmtData(ev.data)} ·</span><span>${esc(ev.hora)}</span>${!passado && faltando(ev).length ? `<span class="falta">Falta ${faltando(ev).join(", ")}</span>` : ""}${passado ? `<span>Check-in</span>` : `<span class="deadline ${encerrado?"over":""}">${encerrado ? "Prazo encerrado" : "Confirmar até "+fmtDT(pz)}</span>`}</div>
+        ${resumo ? `<div class="resumo">${resumo}</div>` : ""}</div>
+      <div class="ring">${ring(c.g, n)}<div><b>${c.g}/${n}</b><br>${passado ? "presentes" : "confirmados"}</div></div>
+      <span class="sec-chev" aria-hidden="true">${on ? "−" : "+"}</span></button>`;
+  if (!on) return `<article class="card ev mini">${dateTile(ev, passado)}<div class="ev-body">${topo}</div></article>`;
   return `<article class="card ev">${dateTile(ev, passado)}
-    <div class="ev-body">
-      <div class="ev-top"><div class="t"><h3>${esc(ev.nome)}</h3>
-        <div class="meta"><span>${esc(ev.hora)}</span>${!passado && faltando(ev).length ? `<span class="falta">Falta ${faltando(ev).join(", ")}</span>` : ""}${passado ? `<span>Check-in</span>` : `<span class="deadline ${encerrado?"over":""}">${encerrado ? "Prazo de confirmação encerrado" : "Confirmar até "+fmtDT(pz)}</span>`}</div></div>
-        <div class="ring">${ring(c.g, n)}<div><b>${c.g}/${n}</b><br>${passado ? "presentes" : "confirmados"}</div></div></div>
+    <div class="ev-body">${topo}
       <div class="rows">${blocoTodos(ev)}${vagas.map(v => rowLider(ev, v, passado)).join("") || `<div class="empty" style="padding:12px 0">Ninguém escalado ainda. Use a aba Montar escala.</div>`}</div>
     </div></article>`;
 }
+let painelAbertos = {};
 function viewPainel(){
   const t = hoje();
   const todos = state.eventos.filter(e => e.data >= t).sort(byDate);
@@ -485,12 +561,15 @@ function viewPainel(){
       <div class="stat y"><b>${y}</b><small>aguardando resposta</small></div>
       <div class="stat r"><b>${r}</b><small>sem resposta ou pedindo troca</small></div>
     </div>
-    <div class="label">Mês</div>
-    ${calendario("painel")}
-    <div class="label">Próximos 7 dias · ${prox.length} cultos</div>
-    ${prox.map(e => cardEvento(e, false)).join("") || `<div class="empty">Nenhum culto nos próximos 7 dias. Crie em Montar escala.</div>`}
-    ${depois ? `<div class="empty">+ ${depois} culto${depois>1?"s":""} depois disso. Veja em <a href="#escala">Montar escala</a>.</div>` : ""}
-    ${pass.length ? `<div class="label">Últimos cultos</div>${pass.map(e => cardEvento(e, true)).join("")}` : ""}`;
+    <div class="duo">
+      <aside class="duo-cal">${calendario("painel")}</aside>
+      <div class="duo-main">
+        <div class="label lbl-row"><span>Próximos 7 dias · ${prox.length} cultos</span>${prox.length ? `<span><button class="btn sm ghost" data-act="tg-painel-todos" data-v="1">Abrir todos</button><button class="btn sm ghost" data-act="tg-painel-todos" data-v="0">Fechar todos</button></span>` : ""}</div>
+        ${prox.map(e => cardEvento(e, false)).join("") || `<div class="empty">Nenhum culto nos próximos 7 dias. Crie em Montar escala.</div>`}
+        ${depois ? `<div class="empty">+ ${depois} culto${depois>1?"s":""} depois disso. Veja em <a href="#escala">Montar escala</a>.</div>` : ""}
+        ${pass.length ? `<div class="label">Últimos cultos</div>${pass.map(e => cardEvento(e, true)).join("")}` : ""}
+      </div>
+    </div>`;
 }
 
 let escalaAbertos = {}, criarAberto = null;
@@ -543,7 +622,7 @@ function viewEscala(){
     const on = escalaAbertos[ev.id] ?? true, normais = ev.vagas.filter(v => !ehTodos(v));
     const ok = normais.filter(v => situacao(ev, v).c === "g").length, nTodos = ev.vagas.length - normais.length;
     const topo = `<button class="ev-tg" data-act="tg-culto" data-e="${ev.id}" aria-expanded="${!!on}">
-        <div class="t"><h3>${esc(ev.nome)}</h3><div class="meta"><span>${esc(ev.hora)}</span><span>${normais.length} na escala${nTodos ? ` + todas as vozes` : ""}</span>${faltando(ev).length ? `<span class="falta">Falta ${faltando(ev).join(", ")}</span>` : ""}</div></div>
+        <div class="t"><h3>${esc(ev.nome)}</h3><div class="meta"><span class="dt-inline">${fmtData(ev.data)} ·</span><span>${esc(ev.hora)}</span><span>${normais.length} na escala${nTodos ? ` + todas as vozes` : ""}</span>${faltando(ev).length ? `<span class="falta">Falta ${faltando(ev).join(", ")}</span>` : ""}</div></div>
         <div class="ring">${ring(ok, normais.length)}<div><b>${ok}/${normais.length}</b><br>confirmados</div></div>
         <span class="sec-chev" aria-hidden="true">${on ? "−" : "+"}</span></button>`;
     if (!on) return `<article class="card ev mini">${dateTile(ev, false)}<div class="ev-body">${topo}</div></article>`;
@@ -576,9 +655,13 @@ function viewEscala(){
         <input type="time" name="hora" id="ev-hora" value="20:00" required aria-label="Horário">
         <button class="btn pri">Criar culto</button>
       </form></section>` : ""}</section>
-    ${calendario("escala")}
+    <div class="duo">
+      <aside class="duo-cal">${calendario("escala")}</aside>
+      <div class="duo-main">
     <div class="label lbl-row"><span>${fmtDiaLongo(dia)} · ${doDia.length} culto${doDia.length===1?"":"s"}</span>${doDia.length > 1 ? `<span><button class="btn sm ghost" data-act="tg-todos-cultos" data-v="1">Abrir todos</button><button class="btn sm ghost" data-act="tg-todos-cultos" data-v="0">Minimizar todos</button></span>` : ""}</div>
-    ${doDia.map(cardEsc).join("") || `<div class="empty">Nenhum culto neste dia. Para criar um, abra <b>Criar cultos</b> acima.</div>`}`;
+    ${doDia.map(cardEsc).join("") || `<div class="empty">Nenhum culto neste dia. Para criar um, abra <b>Criar cultos</b> acima.</div>`}
+      </div>
+    </div>`;
 }
 
 const DIA_LONGO = ["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
@@ -876,6 +959,8 @@ document.addEventListener("click", async e => {
     case "rmindisp": { const eu = pessoa(euId); eu.indisp = eu.indisp.filter(d => d !== b.dataset.d); commit("Data removida"); break; }
     case "replay-logo": replayLogo(); break;
     case "ver-todos": todosAbertos[ev.id] = !todosAbertos[ev.id]; render(); break;
+    case "tg-painel": painelAbertos[ev.id] = !(painelAbertos[ev.id] ?? false); render(); break;
+    case "tg-painel-todos": state.eventos.forEach(e => painelAbertos[e.id] = b.dataset.v === "1"); render(); break;
     case "tg-culto": escalaAbertos[ev.id] = !(escalaAbertos[ev.id] ?? true); render(); break;
     case "cal-dia": diaSel = b.dataset.d; if (route() !== "escala") location.hash = "#escala"; else render(); break;
     case "cal-mes": { const d = new Date(calMes.y, calMes.m + (+b.dataset.dir), 1); calMes = {y: d.getFullYear(), m: d.getMonth()}; render(); break; }
