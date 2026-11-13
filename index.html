@@ -146,6 +146,8 @@ main{max-width:1040px;margin:0 auto;padding:26px 20px 70px;display:flex;flex-dir
 @media (max-width:640px){.cal{padding:12px 10px}.cal-d{min-height:52px;gap:4px}.cal-d .num{font-size:15px}.dots i{width:6px;height:6px}.dica-cal{margin-left:0}}
 .subs{display:flex;flex-direction:column;gap:6px;margin-top:12px;max-height:260px;overflow:auto}
 .sub-op{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:12px;cursor:pointer}
+.sub-op.off{opacity:.45;cursor:not-allowed}
+.sub-op.off .sub-f{color:var(--r)}
 .sub-op:has(input:checked){border-color:var(--ink);background:var(--surface-2)}
 .sub-op .av{width:30px;height:30px;font-size:12px}.sub-op .av::after{display:none}
 .sub-n{flex:1;font-weight:600;display:flex;flex-direction:column}
@@ -506,8 +508,8 @@ function rowLider(ev, v, passado){
       acts += `<a class="btn sm wa" href="${waLink(p, msgConvite(ev, v))}" target="_blank" rel="noopener">${s.c==="r"?"Cobrar":"Lembrar"} no WhatsApp</a>
                <button class="btn sm ghost" data-act="msg" data-e="${ev.id}" data-v="${v.id}">Ver mensagem</button>`;
     if (v.status==="recusado" || v.status==="aberta" || v.status==="trocando") {
-      const opts = state.pessoas.filter(o => o.id!==v.pessoaId && podeTrocar(o, v.funcao) && !o.indisp.includes(ev.data) && !escaladoNoHorario(o.id, ev))
-        .map(o => `<option value="${o.id}">${esc(o.nome)}</option>`).join("");
+      const cand = candidatosTroca(ev, v), livres = cand.filter(c => !c.fora).length;
+      const opts = livres ? cand.map(({p: o, fora}) => `<option value="${o.id}" ${fora ? "disabled" : ""}>${esc(o.nome)}${fora ? ` (${fora})` : ""}</option>`).join("") : "";
       acts += opts ? `<select class="sm" data-act="subst" data-e="${ev.id}" data-v="${v.id}" aria-label="Escolher ${esc(v.funcao)}"><option value="">${v.status==="aberta" ? "Escolher quem vai…" : "Escolher substituto…"}</option>${opts}</select>`
                    : `<span class="pill y">Ninguém livre em ${esc(v.funcao)}</span>`;
     }
@@ -809,16 +811,31 @@ function elegiveis(ev, v){
 function msgPedido(ev, v, p){
   return `Oi, ${primeiro(p.nome)}! Não vou conseguir servir ${naFuncao(v.funcao)} do ${quando(ev)}. Você consegue me cobrir? Se puder, aceite o pedido no app da escala. Obrigado!`;
 }
+/* todo mundo do grupo (vozes ou banda), com o motivo de quem não pode */
+function motivoFora(ev, v, p){
+  if (p.indisp.includes(ev.data)) return "marcou indisponível nesta data";
+  if (ev.vagas.some(x => x.pessoaId === p.id && x.status !== "recusado")) return "já está neste culto";
+  if (escaladoNoHorario(p.id, ev)) return "já escalado neste horário";
+  if ((v.recusaram || []).includes(p.id)) return "já disse que não consegue";
+  return "";
+}
+function candidatosTroca(ev, v){
+  return state.pessoas.filter(p => p.id !== v.pessoaId && podeTrocar(p, v.funcao))
+    .map(p => ({p, fora: motivoFora(ev, v, p)}))
+    .sort((a, b) => !!a.fora - !!b.fora || a.p.nome.localeCompare(b.p.nome));
+}
 function modalTroca(ev, v){
-  const ops = elegiveis(ev, v);
+  const cand = candidatosTroca(ev, v), livres = cand.filter(c => !c.fora).length;
+  const grupo = ehVoz(v.funcao) ? "Vozes" : "Banda";
   modal(`<h3>Quem pode te substituir?</h3>
     <p>Escolha quem você quer pedir. Depois do pedido, abre o WhatsApp para vocês conversarem. <b>Você continua na escala até a pessoa aceitar.</b></p>
     <textarea id="motivo" placeholder="Motivo (ex.: viagem, plantão no trabalho…)" aria-label="Motivo">${esc(v.motivo || "")}</textarea>
-    <div class="subs">${ops.map(p => `<label class="sub-op"><input type="radio" name="sub" value="${p.id}">${avatar(p)}<span class="sub-n">${esc(p.nome)}<small class="sub-f">${p.funcoes.filter(f => ehVoz(f) === ehVoz(v.funcao)).join(" · ")}</small></span></label>`).join("")
-      || `<div class="empty">Ninguém da sua função está livre nesse horário.</div>`}</div>
+    <div class="s-label" style="margin:12px 0 0">${grupo} · ${livres} livre${livres === 1 ? "" : "s"} de ${cand.length}</div>
+    <div class="subs">${cand.map(({p, fora}) => `<label class="sub-op ${fora ? "off" : ""}"><input type="radio" name="sub" value="${p.id}" ${fora ? "disabled" : ""}>${avatar(p)}<span class="sub-n">${esc(p.nome)}<small class="sub-f">${fora ? esc(fora) : p.funcoes.filter(f => ehVoz(f) === ehVoz(v.funcao)).join(" · ")}</small></span></label>`).join("")
+      || `<div class="empty">Ninguém cadastrado nesse grupo.</div>`}</div>
     <div class="foot" style="justify-content:space-between;flex-wrap:wrap">
       <button class="btn ghost sm" data-act="avisar-lider" data-e="${ev.id}" data-v="${v.id}">Não achei ninguém, avisar o líder</button>
-      <span style="display:flex;gap:8px"><button class="btn" data-act="close">Voltar</button>${ops.length ? `<button class="btn pri" data-act="pedir-troca" data-e="${ev.id}" data-v="${v.id}">Enviar pedido</button>` : ""}</span></div>`);
+      <span style="display:flex;gap:8px"><button class="btn" data-act="close">Voltar</button>${livres ? `<button class="btn pri" data-act="pedir-troca" data-e="${ev.id}" data-v="${v.id}">Enviar pedido</button>` : ""}</span></div>`);
 }
 function viewVoluntario(){
   const t = hoje();
