@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Escala · Renascer Praise Jundiaí</title>
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Praise JDI">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: barra escura com navegação em pílulas; cada culto é um cartão com bloco de data, lista de pessoas e anel de confirmação. */
+:root{
+  --bg:#f2f4f8; --surface:#ffffff; --surface-2:#edf0f6; --ink:#121a2c; --muted:#5e6880; --line:#e0e5ee;
+  --accent:#121a2c; --accent-ink:#ffffff; --accent-soft:#e6e8ee;
+  --hero:#121a2c; --hero-ink:#ffffff; --hero-muted:#9aa5bf;
+  --g:#1d8550; --g-bg:#e0f3e8; --y:#a86400; --y-bg:#fdf0d5; --r:#c23a2a; --r-bg:#fde6e2;
+  --font-d:"Bricolage Grotesque","Figtree",system-ui,sans-serif;
+  --font-b:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --shadow:0 1px 2px rgba(18,26,44,.05),0 4px 14px rgba(18,26,44,.05);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0c111d; --surface:#141b2b; --surface-2:#1a2336; --ink:#e7ebf4; --muted:#98a2b9; --line:#242e45;
+  --accent:#eef1f7; --accent-ink:#0c111d; --accent-soft:#262f45;
+  --hero:#080c16; --hero-ink:#ffffff; --hero-muted:#8590aa;
+  --g:#4fc98b; --g-bg:#11301f; --y:#f0b54d; --y-bg:#33260e; --r:#ff7b68; --r-bg:#3b1712;
+  --shadow:0 1px 2px rgba(0,0,0,.3); color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0c111d; --surface:#141b2b; --surface-2:#1a2336; --ink:#e7ebf4; --muted:#98a2b9; --line:#242e45;
+  --accent:#eef1f7; --accent-ink:#0c111d; --accent-soft:#262f45;
+  --hero:#080c16; --hero-ink:#ffffff; --hero-muted:#8590aa;
+  --g:#4fc98b; --g-bg:#11301f; --y:#f0b54d; --y-bg:#33260e; --r:#ff7b68; --r-bg:#3b1712;
+  --shadow:0 1px 2px rgba(0,0,0,.3); color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--font-b);-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:var(--font-d);text-wrap:balance;margin:0;letter-spacing:-.01em}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* topo */
+header{background:var(--hero);color:var(--hero-ink);position:sticky;top:0;z-index:5}
+.top{max-width:1040px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--font-d);font-size:20px;font-weight:700}
+.brand .mark{width:30px;height:30px;border-radius:9px;background:var(--hero-ink);display:grid;place-items:center;color:#121a2c}
+.brand small{display:block;font-family:var(--font-b);font-size:12px;font-weight:500;color:var(--hero-muted);margin-top:-2px}
+nav{display:flex;gap:4px;background:rgba(255,255,255,.07);padding:4px;border-radius:12px;overflow-x:auto;max-width:100%}
+nav a{padding:7px 14px;border-radius:9px;color:var(--hero-muted);text-decoration:none;font-weight:600;font-size:14px;white-space:nowrap}
+nav a:hover{color:var(--hero-ink)}
+nav a.on{background:var(--hero-ink);color:#121a2c}
+.sync{margin-left:auto;font-size:12px;color:var(--hero-muted);display:flex;align-items:center;gap:6px}
+.sync i{width:7px;height:7px;border-radius:50%;background:var(--hero-muted)}
+.sync.ok i{background:#4fc98b}.sync.err i{background:#ff7b68}
+
+main{max-width:1040px;margin:0 auto;padding:26px 20px 70px;display:flex;flex-direction:column;gap:14px}
+.head{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:4px}
+.head h2{font-size:28px}
+.head p{margin:2px 0 0;color:var(--muted);max-width:60ch}
+.label{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-top:14px}
+
+/* resumo */
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:2px;position:relative;overflow:hidden}
+.stat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--line)}
+.stat.g::before{background:var(--g)}.stat.y::before{background:var(--y)}.stat.r::before{background:var(--r)}
+.stat b{font-family:var(--font-d);font-size:30px;line-height:1.1;font-variant-numeric:tabular-nums}
+.stat small{color:var(--muted);font-size:13px}
+
+/* cartões */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}
+.ev{display:grid;grid-template-columns:auto 1fr;gap:0}
+.date{width:78px;border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;padding:16px 0;gap:0}
+.date .m{font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--accent)}
+.date .d{font-family:var(--font-d);font-size:32px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.date .w{font-size:12px;color:var(--muted);text-transform:capitalize}
+.date.past .m{color:var(--muted)}
+.ev-body{padding:14px 18px 8px;min-width:0}
+.ev-top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.ev-top .t{flex:1;min-width:160px}
+.ev-top h3{font-size:18px}
+.ev-top .meta{color:var(--muted);font-size:13px;display:flex;gap:10px;flex-wrap:wrap}
+.deadline.over{color:var(--r);font-weight:600}
+.falta{color:var(--r);font-weight:700;font-size:13px}
+.eqgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.eqcard{padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.eqh{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:2px}
+.eqh h3{font-size:16px}
+.eqrow{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted)}
+.eqrow{display:grid;grid-template-columns:96px minmax(0,1fr) 28px;gap:6px;align-items:center}
+.eqrow .fsel{font-weight:600;background:var(--surface-2);border-color:transparent}
+.eqrow.voz .fsel{background:var(--accent-soft)}
+.eqrow .x{padding:4px;justify-content:center}
+.eqsec{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-top:4px}
+.eqadd{display:flex;gap:6px;margin-top:4px}
+.secao{display:flex;flex-direction:column;gap:12px}
+.sec-btn{display:flex;align-items:center;gap:14px;flex-wrap:wrap;width:100%;padding:18px 20px;border-radius:16px;border:1px solid var(--line);background:var(--surface);box-shadow:var(--shadow);cursor:pointer;text-align:left;color:var(--ink)}
+.sec-btn:hover{border-color:var(--muted)}
+.secao.on .sec-btn{background:var(--hero);color:var(--hero-ink);border-color:var(--hero)}
+.secao.on .sec-btn .tag{background:rgba(255,255,255,.12);color:var(--hero-ink)}
+.sec-t{font-family:var(--font-d);font-size:22px;font-weight:700;letter-spacing:.02em}
+.sec-n{font-size:13px;color:var(--muted)}
+.secao.on .sec-n{color:var(--hero-muted)}
+.sec-btn .tags{flex:1}
+.sec-chev{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-size:20px;font-weight:600;background:var(--surface-2);color:var(--ink);margin-left:auto}
+.secao.on .sec-chev{background:var(--hero-ink);color:#121a2c}
+.av.grp{background:var(--hero);color:var(--hero-ink);font-size:13px}
+.av.grp::after{display:none}
+.todos-lista{gap:6px}
+.nome-chip{display:inline-flex;align-items:center;gap:6px;font-size:13px;padding:4px 10px;border-radius:999px;background:var(--surface-2)}
+.nome-chip i{width:7px;height:7px;border-radius:50%;background:var(--muted)}
+.nome-chip.g i{background:var(--g)}.nome-chip.y i{background:var(--y)}.nome-chip.r i{background:var(--r)}
+.nome-chip.r{color:var(--r)}
+.todos-eq{font-size:13px;padding:8px 10px;border-radius:8px;background:var(--surface-2);color:var(--muted)}
+.todos-eq b{color:var(--ink)}
+.todos-tg{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);cursor:pointer}
+.ev-tg{display:flex;align-items:center;gap:14px;width:100%;background:none;border:0;padding:0 0 10px;cursor:pointer;text-align:left;color:inherit;flex-wrap:wrap}
+.ev-tg .t{flex:1;min-width:160px}
+.ev-tg h3{font-size:18px}
+.ev-tg .meta{color:var(--muted);font-size:13px;display:flex;gap:10px;flex-wrap:wrap}
+.ev.mini .ev-body{padding-bottom:4px;display:flex;align-items:center}
+.ev.mini .ev-tg{padding:0}
+.ev.mini .date{padding:10px 0}
+.ev.mini .date .d{font-size:26px}
+.ev-tg:hover .sec-chev{background:var(--line)}
+.lbl-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.lbl-row .btn{text-transform:none;letter-spacing:0}
+.cal{padding:16px 18px}
+.cal-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.cal-h h3{font-size:20px}.cal-h h3 span{color:var(--muted);font-weight:600}
+.cal-h .btn{font-size:20px;width:36px;height:36px;padding:0}
+.cal-g{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.cal-w{font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--muted);text-align:center;padding:4px 0}
+.cal-d{min-height:62px;border-radius:10px;border:1px solid transparent;background:var(--surface-2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;color:var(--ink);font:inherit;padding:6px 2px}
+.cal-d:hover{border-color:var(--muted)}
+.cal-d.fora{background:transparent;cursor:default}
+.cal-d.vazio{background:transparent;color:var(--muted)}
+.cal-d.passado .num{opacity:.55}
+.cal-d .num{font-family:var(--font-d);font-size:17px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
+.cal-d.hoje .num{background:var(--ink);color:var(--bg);border-radius:999px;padding:3px 7px}
+.cal-d.sel{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink);background:var(--surface)}
+.dots{display:flex;gap:3px;flex-wrap:wrap;justify-content:center;min-height:7px}
+.dots i,.cal-leg i{width:7px;height:7px;border-radius:50%;display:inline-block;background:var(--muted)}
+.dots i.g,.cal-leg i.g{background:var(--g)}.dots i.y,.cal-leg i.y{background:var(--y)}.dots i.r,.cal-leg i.r{background:var(--r)}
+.dots i.pg{background:var(--g);opacity:.4}.dots i.pr{background:var(--r);opacity:.4}
+.cal-leg{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;font-size:12px;color:var(--muted)}
+.cal-leg span{display:inline-flex;align-items:center;gap:6px}
+.dica-cal{margin-left:auto}
+@media (max-width:640px){.cal{padding:12px 10px}.cal-d{min-height:52px;gap:4px}.cal-d .num{font-size:15px}.dots i{width:6px;height:6px}.dica-cal{margin-left:0}}
+.subs{display:flex;flex-direction:column;gap:6px;margin-top:12px;max-height:260px;overflow:auto}
+.sub-op{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:12px;cursor:pointer}
+.sub-op:has(input:checked){border-color:var(--ink);background:var(--surface-2)}
+.sub-op .av{width:30px;height:30px;font-size:12px}.sub-op .av::after{display:none}
+.sub-n{flex:1;font-weight:600}
+.pedido{border-color:var(--y);box-shadow:0 0 0 1px var(--y)}
+.enviado{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px}
+.enviado p{margin:0}
+.enviado .btn.big{width:100%;flex:none}
+.ok-ico{width:48px;height:48px;border-radius:50%;background:var(--y-bg);color:var(--y);display:grid;place-items:center;font-size:22px;font-weight:700}
+body.min{background:#000}
+body.min header, body.min footer{display:none}
+body.min main{max-width:none;padding:0;display:block}
+.screen.full{min-height:100vh;min-height:100dvh;border-radius:0;max-width:560px;margin:0 auto;background:var(--bg)}
+body.min .splash{min-height:100vh;min-height:100dvh}
+.screen.full .s-head{padding-top:max(22px, env(safe-area-inset-top))}
+.lider-login{max-width:420px;margin:40px auto;display:flex;flex-direction:column;gap:10px}
+.lider-login input{width:100%}
+.topbtn{color:var(--hero-muted)}
+.topbtn:hover{background:rgba(255,255,255,.08);color:var(--hero-ink)}
+.link-row{gap:6px}
+.av.vazio{background:var(--surface-2);color:var(--muted);border:1.5px dashed var(--muted)}
+.ring{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted)}
+.ring svg{display:block}
+.ring b{color:var(--ink);font-size:15px;font-variant-numeric:tabular-nums}
+
+.row{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:11px 0;border-top:1px solid var(--line)}
+.rows .row:first-child{border-top:0}
+.av{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:700;color:#fff;position:relative}
+.av::after{content:"";position:absolute;right:-2px;bottom:-2px;width:12px;height:12px;border-radius:50%;border:2px solid var(--surface);background:var(--muted)}
+.av.g::after{background:var(--g)}.av.y::after{background:var(--y)}.av.r::after{background:var(--r)}
+.who{min-width:0}
+.who .n{font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.who .sub{font-size:13px;color:var(--muted)}
+.who .motivo{font-size:13px;color:var(--r)}
+.right{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.tag{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 8px;border-radius:6px;background:var(--surface-2);color:var(--muted)}
+.pill{font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;white-space:nowrap}
+.pill.g{background:var(--g-bg);color:var(--g)}.pill.y{background:var(--y-bg);color:var(--y)}.pill.r{background:var(--r-bg);color:var(--r)}
+.acts{grid-column:2 / -1;display:flex;gap:6px;flex-wrap:wrap}
+.acts:empty{display:none}
+
+.btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 14px;border-radius:10px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;font-weight:600;font-size:14px;transition:background .15s,border-color .15s}
+.btn:hover{border-color:var(--muted)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.ok{background:var(--g);border-color:var(--g);color:#fff}
+.btn.no{border-color:var(--r);color:var(--r);background:transparent}
+.btn.wa{background:#1fa855;border-color:#1fa855;color:#fff}
+.btn.sm{padding:5px 10px;font-size:13px;border-radius:8px}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--muted)}
+.btn.ghost:hover{background:var(--surface-2)}
+.btn.big{padding:13px 16px;font-size:16px;flex:1;border-radius:12px;text-align:center}
+input,select,textarea{padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);min-width:0}
+textarea{width:100%;min-height:84px;resize:vertical}
+select.sm{padding:5px 8px;font-size:13px;border-radius:8px}
+
+.panel{padding:18px}
+.panel h3{font-size:16px;margin-bottom:12px}
+.formrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.formrow .grow{flex:1;min-width:170px}
+.chk{display:inline-flex;gap:6px;align-items:center;font-size:14px;padding:6px 10px;border:1px solid var(--line);border-radius:999px;cursor:pointer}
+.chk:has(input:checked){background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.chk input{margin:0}
+.addvaga{padding:10px 0 12px;border-top:1px dashed var(--line);margin-top:2px}
+
+.people{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px}
+.person{padding:16px;display:flex;flex-direction:column;gap:12px}
+.person .ph{display:flex;align-items:center;gap:12px}
+.person .ph .av{width:44px;height:44px;font-size:15px}
+.person .ph .av::after{display:none}
+.person h3{font-size:16px}
+.person .sub{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.tags{display:flex;gap:6px;flex-wrap:wrap}
+.meter{display:flex;flex-direction:column;gap:6px}
+.meter .top{padding:0;display:flex;justify-content:space-between;font-size:13px;color:var(--muted)}
+.meter .top b{font-family:var(--font-d);font-size:18px;font-variant-numeric:tabular-nums}
+.track{height:6px;border-radius:6px;background:var(--surface-2);overflow:hidden}
+.track span{display:block;height:100%;border-radius:6px}
+.nums{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center}
+.nums div{background:var(--surface-2);border-radius:10px;padding:6px 4px;font-size:11px;color:var(--muted);line-height:1.25}
+.nums b{display:block;font-size:17px;color:var(--ink);font-variant-numeric:tabular-nums}
+.nums b.bad{color:var(--r)}
+.indisp{font-size:13px;color:var(--muted)}
+
+/* visão do voluntário: tela de celular */
+.vol-wrap{display:grid;grid-template-columns:minmax(0,1fr) 390px;gap:28px;align-items:start}
+.vol-side{display:flex;flex-direction:column;gap:12px}
+.vol-side p{margin:0;color:var(--muted);max-width:52ch}
+.phone{background:var(--hero);border-radius:38px;padding:10px;box-shadow:0 20px 50px rgba(18,26,44,.18)}
+.screen{background:var(--bg);border-radius:30px;overflow:hidden;min-height:640px}
+.s-head{background:#121a2c;color:#fff;padding:22px 20px 20px}
+.s-head small{opacity:.8;font-size:13px}
+.s-head h3{font-size:22px;margin-top:2px}
+.s-body{padding:16px;display:flex;flex-direction:column;gap:12px}
+.s-label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-top:6px}
+.vcard{padding:16px;display:flex;flex-direction:column;gap:6px}
+.vcard .vtop{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.vcard .when{font-family:var(--font-d);font-size:20px;font-weight:700}
+.vcard .sub{font-size:13px;color:var(--muted)}
+.vbtns{display:flex;gap:8px;margin-top:8px}
+.empty{color:var(--muted);font-size:14px;padding:4px 2px}
+.pick{display:flex;align-items:center;gap:12px;padding:12px 14px;text-align:left;cursor:pointer;width:100%;font:inherit;color:var(--ink)}
+.pick:hover{border-color:var(--muted)}
+.pick .av::after{display:none}
+.sair{background:rgba(255,255,255,.14);border:0;color:#fff;font-size:12px;font-weight:600;padding:5px 10px;border-radius:999px;cursor:pointer}
+#login-nome{width:100%;font-size:16px;padding:12px 14px}
+.splash{background:#000;color:#fff;min-height:640px;display:flex;flex-direction:column;justify-content:space-between;padding:34px 26px 28px;font-family:"Space Grotesk","Figtree",system-ui,sans-serif}
+.sp-top{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#8a8a8a;text-align:center;font-weight:500}
+.wordmark{display:flex;flex-direction:column;align-items:center;line-height:.86}
+.wordmark .w1,.wordmark .w2{font-weight:700;font-size:58px;letter-spacing:-.03em}
+.wordmark .lt{display:inline-block;opacity:0;animation:foco 1100ms cubic-bezier(0.16,1,0.3,1) both;animation-delay:calc(200ms + var(--i) * 70ms)}
+.wordmark{cursor:pointer}
+@keyframes foco{from{filter:blur(14px);transform:scale(1.5);opacity:0}to{filter:blur(0);transform:scale(1);opacity:1}}
+@media (prefers-reduced-motion:reduce){@keyframes foco{from{opacity:0}to{opacity:1}}}
+.wordmark .w2{font-size:76px}
+.wordmark .w3{display:flex;align-items:center;gap:12px;margin-top:16px;font-weight:500;font-size:15px;letter-spacing:.5em;padding-left:.5em;color:#d9d9d9}
+.wordmark .w3 i{display:block;width:26px;height:1px;background:#5a5a5a}
+.sp-logo{width:132px;height:auto;margin-bottom:30px;display:block}
+.sp-top{position:relative;padding:0 34px}
+.sp-replay{position:absolute;right:-6px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:50%;border:1px solid #333;background:transparent;color:#8a8a8a;font-size:14px;cursor:pointer;display:grid;place-items:center;padding:0}
+.sp-replay:hover{color:#fff;border-color:#666}
+.sp-bottom{display:flex;flex-direction:column;gap:14px}
+.sp-next{display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid #262626;padding-top:14px;font-size:13px;color:#8a8a8a}
+.sp-next b{color:#fff;font-size:15px;font-weight:800;text-transform:capitalize}
+.sp-btn{background:#fff;color:#000;border:0;border-radius:999px;padding:16px;font:inherit;font-weight:800;font-size:16px;cursor:pointer;letter-spacing:-.01em}
+.sp-btn:hover{background:#e6e6e6}
+.phone:has(.splash){background:#1a1a1a}
+:root[data-theme="dark"] .phone{background:#2b3245;box-shadow:0 0 0 1px #3a4360,0 20px 50px rgba(0,0,0,.5)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .phone{background:#2b3245;box-shadow:0 0 0 1px #3a4360,0 20px 50px rgba(0,0,0,.5)}}
+.dica{display:flex;flex-direction:column;gap:8px;align-items:flex-start;padding:16px}
+.dica p{margin:0;font-size:14px;color:var(--muted)}
+.chipx{display:inline-flex;gap:6px;align-items:center;font-size:13px;padding:4px 10px;border-radius:999px;background:var(--surface-2);border:0;cursor:pointer;color:var(--ink)}
+.chipx:hover{background:var(--r-bg);color:var(--r)}
+
+#modal{position:fixed;inset:0;background:rgba(8,12,22,.5);display:none;align-items:center;justify-content:center;padding:18px;z-index:20}
+#modal.on{display:flex}
+#modal .box{background:var(--surface);border-radius:18px;padding:22px;max-width:440px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+#modal h3{font-size:19px;margin-bottom:6px}
+#modal p{margin:0 0 12px;color:var(--muted)}
+#modal .foot{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+pre.msg{white-space:pre-wrap;background:var(--surface-2);border-radius:12px;padding:14px;font:inherit;font-size:14px;margin:8px 0 0}
+#toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;font-weight:600;opacity:0;transition:.25s;pointer-events:none;z-index:30}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+footer{max-width:1040px;margin:0 auto;padding:0 20px 30px;color:var(--muted);font-size:13px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+@media (max-width:860px){.vol-wrap{grid-template-columns:1fr}.vol-side > p:first-of-type{display:none}.phone{max-width:390px;width:100%;margin:0 auto}}
+@media (max-width:640px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.date{width:62px}.ev-body{padding:12px 14px 6px}.right{grid-column:2 / -1;justify-content:flex-start}.sync{display:none}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <div class="brand"><div class="mark" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3 3 7-7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div>Escala<small>Renascer Praise Jundiaí</small></div></div>
+    <nav id="nav">
+      <a href="#painel" data-r="painel">Painel</a>
+      <a href="#escala" data-r="escala">Montar escala</a>
+      <a href="#voluntarios" data-r="voluntarios">Equipe</a>
+    </nav>
+    <div class="sync" id="sync"><i></i><span>Conectando…</span></div>
+    <a class="btn sm ghost topbtn" href="./" title="Abrir a tela dos ministros">Tela dos ministros</a>
+    <button class="btn sm ghost topbtn" data-act="sair-lider" id="btn-sair">Sair</button>
+  </div>
+</header>
+<main id="view"></main>
+<footer>Renascer Praise Jundiaí · prazo de confirmação de 48h antes do culto</footer>
+<div id="modal"><div class="box" id="mbox"></div></div>
+<div id="toast" role="status"></div>
+
+<script>
+const INSTRUMENTOS = ["KEYS","VIOLÃO","GUITAR","BASS","DRUM"];
+const VOZES = ["MINISTRO","BACKING"];
+const FUNCOES = [...VOZES, ...INSTRUMENTOS];            /* o que cada pessoa sabe fazer */
+const PAPEIS = [...VOZES, ...INSTRUMENTOS];          /* posições na escala */
+const habilidade = f => f;
+const podeFazer = (p, f) => p.funcoes.includes(habilidade(f));
+function faltando(ev){ const c = {}; ev.vagas.filter(v => v.status === "aberta").forEach(v => c[v.funcao] = (c[v.funcao]||0)+1);
+  return Object.entries(c).map(([f, n]) => n > 1 ? `${n} ${f}` : f); }
+const EQUIPE_PADRAO = () => [{funcao:"MINISTRO",pid:""},{funcao:"BACKING",pid:""},{funcao:"BACKING",pid:""},{funcao:"KEYS",pid:""},{funcao:"GUITAR",pid:""},{funcao:"BASS",pid:""},{funcao:"DRUM",pid:""}];
+const PRAZO_H = 48;
+const DIAS = ["dom","seg","ter","qua","qui","sex","sáb"];
+const MESES = ["JAN","FEV","MAR","ABR","MAI","JUN","JUL","AGO","SET","OUT","NOV","DEZ"];
+const AV_CORES = ["#2f5bd3","#0e7490","#b45309","#be185d","#6d28d9","#047857","#9f1239","#1e40af"];
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid = () => Math.random().toString(36).slice(2, 10);
+const pad = n => String(n).padStart(2, "0");
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const hoje = () => ymd(new Date());
+const parseDate = s => { const [y,m,d] = s.split("-").map(Number); return new Date(y, m-1, d); };
+const shiftDays = (s, n) => { const d = parseDate(s); d.setDate(d.getDate()+n); return ymd(d); };
+function dtEvento(ev){ const d = parseDate(ev.data); const [h,mi] = (ev.hora||"00:00").split(":").map(Number); d.setHours(h, mi, 0, 0); return d; }
+const prazo = ev => new Date(dtEvento(ev).getTime() - PRAZO_H*3600e3);
+const fmtData = s => { const d = parseDate(s); return `${DIAS[d.getDay()]}, ${pad(d.getDate())}/${pad(d.getMonth()+1)}`; };
+const fmtDT = d => `${DIAS[d.getDay()]} ${pad(d.getDate())}/${pad(d.getMonth()+1)} às ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+const byDate = (a, b) => dtEvento(a) - dtEvento(b);
+const primeiro = nome => { const w = String(nome).split(" "); return w[0].endsWith(".") && w[1] ? w[0]+" "+w[1] : w[0]; };
+const iniciais = nome => String(nome).split(" ").filter(Boolean).slice(0, 2).map(x => x[0]).join("").toUpperCase();
+const corDe = id => { let h = 0; for (const c of String(id)) h = (h*31 + c.charCodeAt(0)) >>> 0; return AV_CORES[h % AV_CORES.length]; };
+const avatar = (p, c="") => p.vazio ? `<div class="av ${c} vazio" aria-hidden="true">?</div>` : `<div class="av ${c}" style="background:${corDe(p.id)}" aria-hidden="true">${esc(iniciais(p.nome))}</div>`;
+
+/* ---------- dados de exemplo ---------- */
+const AGENDA = [{dow:0,hora:"08:00"},{dow:0,hora:"10:00"},{dow:0,hora:"16:00"},{dow:0,hora:"18:00"},{dow:1,hora:"20:00"},{dow:2,hora:"20:00"},{dow:4,hora:"20:00"}];
+const NOME_DIA = ["Culto de domingo","Culto de segunda","Culto de terça","Culto de quarta","Culto de quinta","Culto de sexta","Culto de sábado"];
+function proxDow(dow, incluirHoje){ const d = new Date(); let diff = (dow - d.getDay() + 7) % 7; if (!diff && !incluirHoje) diff = 7; d.setDate(d.getDate()+diff); return ymd(d); }
+function cultosEntre(ini, dias){
+  const out = [];
+  for (let i = 0; i < dias; i++) { const data = shiftDays(ini, i), dow = parseDate(data).getDay();
+    AGENDA.filter(a => a.dow === dow).forEach(a => out.push({data, hora: a.hora, nome: NOME_DIA[dow]})); }
+  return out;
+}
+/* ===================== CONEXÃO ===================== */
+const SUPABASE_URL = "https://xbksicqfblafgfidrrix.supabase.co";
+const SUPABASE_KEY = "sb_publishable_tgGVMyv1J5rqZGYHdpdNUw_CJHCoyVQ";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {auth: {persistSession: true, detectSessionInUrl: true}});
+const LS = {get: k => { try { return localStorage.getItem(k); } catch(e) { return null; } },
+            set: (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch(e) {} }};
+
+let state = {pessoas: [], eventos: [], equipes: {}, todasVozes: {}};
+const ROTAS_LIDER = ["painel", "escala", "voluntarios", "lider"];
+const modoLider = () => ROTAS_LIDER.includes(location.hash.replace("#", ""));
+let sessao = null, ehLider = null, carregado = false;
+
+/* token pessoal do ministro: vem no link (?t=...) e fica guardado no celular */
+(() => { const t = new URLSearchParams(location.search).get("t"); if (t) LS.set("escala_token", t); })();
+let token = LS.get("escala_token");
+let euId = null, proxCulto = null;
+
+const pessoa = id => state.pessoas.find(p => p.id === id) || {id: id || "x", nome: id ? "(removido)" : "Vaga aberta", whats:"", funcoes:[], indisp:[], vazio: !id};
+const evento = id => state.eventos.find(e => e.id === id);
+const vaga = (ev, id) => ev.vagas.find(v => v.id === id);
+
+function situacao(ev, v){
+  if (v.status === "aberta") return {t:"Sem ninguém", c:"r"};
+  if (v.status === "presente") return {t:"Presente", c:"g"};
+  if (v.status === "faltou") return {t:"Faltou sem avisar", c:"r"};
+  if (v.status === "confirmado") return {t:"Confirmado", c:"g"};
+  if (v.status === "recusado") return {t: ehTodos(v) ? "Não vai" : "Troca aberta pelo líder", c:"r"};
+  if (v.status === "trocando") return v.pedidoPara ? {t:`Aguardando ${primeiro(pessoa(v.pedidoPara).nome)} aceitar`, c:"y"} : {t:"Procurando substituto", c:"r"};
+  if (new Date() > prazo(ev)) return {t:"Sem resposta", c:"r"};
+  return {t:"Aguardando", c:"y"};
+}
+const PREP = {GUITAR:"na", MINISTRO:"como"};
+const naFuncao = f => `${PREP[f] || "no"} *${f}*`;
+const fmtHora = h => { const [hh, mm] = h.split(":"); return `${+hh}h${mm !== "00" ? mm : ""}`; };
+const quando = ev => { const d = parseDate(ev.data); return `${ev.nome.charAt(0).toLowerCase() + ev.nome.slice(1)}, ${pad(d.getDate())}/${pad(d.getMonth()+1)}, às ${fmtHora(ev.hora)}`; };
+function msgConvite(ev, v){
+  const p = pessoa(v.pessoaId), pz = prazo(ev);
+  return `Olá, ${primeiro(p.nome)}! Você está na escala ${naFuncao(v.funcao)}${ehTodos(v) ? " (todas as vozes)" : ""} do ${quando(ev)}.\n\nConfirme no app da escala até ${DIA_LONGO[pz.getDay()].toLowerCase()}, ${pad(pz.getDate())}/${pad(pz.getMonth()+1)}, às ${fmtHora(`${pad(pz.getHours())}:${pad(pz.getMinutes())}`)}.\nSe não puder, toque em "Não posso" e escolha quem vai te substituir.\n\nObrigado por servir!`;
+}
+const waLink = (p, msg) => `https://wa.me/${(p.whats||"").replace(/\D/g,"")}?text=${encodeURIComponent(msg)}`;
+function escaladoNoHorario(pid, ev){
+  return state.eventos.some(e => e.data === ev.data && e.hora === ev.hora && e.vagas.some(v => v.pessoaId === pid && v.status !== "recusado"));
+}
+function stats(pid){
+  let total=0, pres=0, falt=0, rec=0;
+  state.eventos.forEach(e => e.vagas.forEach(v => {
+    if (v.pessoaId !== pid) return; total++;
+    if (v.status==="presente") pres++; else if (v.status==="faltou") falt++; else if (v.status==="recusado") rec++;
+  }));
+  return {total, pres, falt, rec, idx: pres+falt ? Math.round(100*pres/(pres+falt)) : null};
+}
+function fmtTel(w){ const d = String(w).replace(/\D/g,"").replace(/^55/,""); return d.length===11 ? `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}` : d; }
+
+/* ---------- peças visuais ---------- */
+function dateTile(ev, passado){
+  const d = parseDate(ev.data);
+  return `<div class="date ${passado?"past":""}"><span class="m">${MESES[d.getMonth()]}</span><span class="d">${pad(d.getDate())}</span><span class="w">${DIAS[d.getDay()]}</span></div>`;
+}
+function ring(ok, total){
+  const r = 15, C = 2*Math.PI*r, f = total ? ok/total : 0;
+  const cor = f === 1 ? "var(--g)" : f >= .6 ? "var(--accent)" : "var(--y)";
+  return `<svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="${r}" fill="none" stroke="var(--surface-2)" stroke-width="5"/>
+    <circle cx="20" cy="20" r="${r}" fill="none" stroke="${cor}" stroke-width="5" stroke-linecap="round" stroke-dasharray="${(C*f).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 20 20)"/></svg>`;
+}
+
+/* ---------- telas ---------- */
+function rowLider(ev, v, passado){
+  const p = pessoa(v.pessoaId), s = situacao(ev, v);
+  let acts = "";
+  if (passado || ev.data === hoje()) {
+    if (v.status==="confirmado" || v.status==="pendente")
+      acts += `<button class="btn sm ok" data-act="checkin" data-e="${ev.id}" data-v="${v.id}" data-s="presente">Veio</button>
+               <button class="btn sm no" data-act="checkin" data-e="${ev.id}" data-v="${v.id}" data-s="faltou">Faltou</button>`;
+    else if (v.status==="presente" || v.status==="faltou")
+      acts += `<button class="btn sm ghost" data-act="checkin" data-e="${ev.id}" data-v="${v.id}" data-s="confirmado">Desfazer check-in</button>`;
+  }
+  if (!passado) {
+    if (v.status==="pendente")
+      acts += `<a class="btn sm wa" href="${waLink(p, msgConvite(ev, v))}" target="_blank" rel="noopener">${s.c==="r"?"Cobrar":"Lembrar"} no WhatsApp</a>
+               <button class="btn sm ghost" data-act="msg" data-e="${ev.id}" data-v="${v.id}">Ver mensagem</button>`;
+    if (v.status==="recusado" || v.status==="aberta" || v.status==="trocando") {
+      const opts = state.pessoas.filter(o => o.id!==v.pessoaId && podeFazer(o, v.funcao) && !o.indisp.includes(ev.data) && !escaladoNoHorario(o.id, ev))
+        .map(o => `<option value="${o.id}">${esc(o.nome)}</option>`).join("");
+      acts += opts ? `<select class="sm" data-act="subst" data-e="${ev.id}" data-v="${v.id}" aria-label="Escolher ${esc(v.funcao)}"><option value="">${v.status==="aberta" ? "Escolher quem vai…" : "Escolher substituto…"}</option>${opts}</select>`
+                   : `<span class="pill y">Ninguém livre em ${esc(v.funcao)}</span>`;
+    }
+  }
+  return `<div class="row">${avatar(p, s.c)}
+    <div class="who"><div class="n">${esc(p.nome)} <span class="tag">${esc(v.funcao)}</span></div>
+      ${v.motivo ? `<div class="motivo">Motivo: ${esc(v.motivo)}</div>` : ""}</div>
+    <div class="right"><span class="pill ${s.c}">${s.t}</span></div>
+    <div class="acts">${acts}</div></div>`;
+}
+function cardEvento(ev, passado){
+  const normais = ev.vagas.filter(v => !ehTodos(v)), n = normais.length, c = {g:0,y:0,r:0};
+  normais.forEach(v => c[situacao(ev, v).c]++);
+  const pz = prazo(ev), encerrado = new Date() > pz, ord = {r:0,y:1,g:2};
+  const vagas = passado ? normais : [...normais].sort((a,b) => ord[situacao(ev,a).c] - ord[situacao(ev,b).c]);
+  return `<article class="card ev">${dateTile(ev, passado)}
+    <div class="ev-body">
+      <div class="ev-top"><div class="t"><h3>${esc(ev.nome)}</h3>
+        <div class="meta"><span>${esc(ev.hora)}</span>${!passado && faltando(ev).length ? `<span class="falta">Falta ${faltando(ev).join(", ")}</span>` : ""}${passado ? `<span>Check-in</span>` : `<span class="deadline ${encerrado?"over":""}">${encerrado ? "Prazo de confirmação encerrado" : "Confirmar até "+fmtDT(pz)}</span>`}</div></div>
+        <div class="ring">${ring(c.g, n)}<div><b>${c.g}/${n}</b><br>${passado ? "presentes" : "confirmados"}</div></div></div>
+      <div class="rows">${blocoTodos(ev)}${vagas.map(v => rowLider(ev, v, passado)).join("") || `<div class="empty" style="padding:12px 0">Ninguém escalado ainda. Use a aba Montar escala.</div>`}</div>
+    </div></article>`;
+}
+function viewPainel(){
+  const t = hoje();
+  const todos = state.eventos.filter(e => e.data >= t).sort(byDate);
+  const prox = todos.filter(e => e.data <= shiftDays(t, 7)), depois = todos.length - prox.length;
+  const pass = state.eventos.filter(e => e.data < t).sort(byDate).reverse().slice(0, 2);
+  let tot=0, g=0, y=0, r=0;
+  prox.forEach(e => e.vagas.filter(v => !ehTodos(v)).forEach(v => { tot++; const c = situacao(e, v).c; if(c==="g") g++; else if(c==="y") y++; else r++; }));
+  return `<div class="head"><div><h2>Painel do líder</h2><p>Quem confirmou, quem ainda não respondeu e onde está faltando gente.</p></div></div>
+    <div class="stats">
+      <div class="stat"><b>${tot}</b><small>vagas nos próximos 7 dias</small></div>
+      <div class="stat g"><b>${g}</b><small>confirmadas</small></div>
+      <div class="stat y"><b>${y}</b><small>aguardando resposta</small></div>
+      <div class="stat r"><b>${r}</b><small>sem resposta ou pedindo troca</small></div>
+    </div>
+    <div class="label">Mês</div>
+    ${calendario("painel")}
+    <div class="label">Próximos 7 dias · ${prox.length} cultos</div>
+    ${prox.map(e => cardEvento(e, false)).join("") || `<div class="empty">Nenhum culto nos próximos 7 dias. Crie em Montar escala.</div>`}
+    ${depois ? `<div class="empty">+ ${depois} culto${depois>1?"s":""} depois disso. Veja em <a href="#escala">Montar escala</a>.</div>` : ""}
+    ${pass.length ? `<div class="label">Últimos cultos</div>${pass.map(e => cardEvento(e, true)).join("")}` : ""}`;
+}
+
+let escalaAbertos = {}, criarAberto = null;
+const MESES_LONGO = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+let calMes = (() => { const d = new Date(); return {y: d.getFullYear(), m: d.getMonth()}; })(), diaSel = null;
+function diaAtual(){
+  if (diaSel) return diaSel;
+  const t = hoje(), prox = state.eventos.filter(e => e.data >= t).sort(byDate)[0];
+  return state.eventos.some(e => e.data === t) || !prox ? t : prox.data;
+}
+const fmtDiaLongo = s => { const d = parseDate(s); return `${DIA_LONGO[d.getDay()]}, ${d.getDate()} de ${MESES_LONGO[d.getMonth()].toLowerCase()}`; };
+function corEvento(ev){
+  if (!ev.vagas.length) return "n";
+  const cs = ev.vagas.map(v => situacao(ev, v).c);
+  if (ev.data < hoje()) return cs.includes("r") ? "pr" : "pg";
+  return cs.includes("r") ? "r" : cs.includes("y") ? "y" : "g";
+}
+function calendario(ctx){
+  const {y, m} = calMes, ini = new Date(y, m, 1).getDay(), nd = new Date(y, m+1, 0).getDate();
+  const t = hoje(), sel = ctx === "escala" ? diaAtual() : null;
+  let cells = "";
+  for (let i = 0; i < ini; i++) cells += `<span class="cal-d fora"></span>`;
+  for (let d = 1; d <= nd; d++) {
+    const ds = `${y}-${pad(m+1)}-${pad(d)}`, evs = state.eventos.filter(e => e.data === ds).sort(byDate);
+    cells += `<button class="cal-d ${ds===sel?"sel":""} ${ds===t?"hoje":""} ${evs.length?"":"vazio"} ${ds<t?"passado":""}" data-act="cal-dia" data-d="${ds}" aria-label="${fmtDiaLongo(ds)}, ${evs.length} cultos">
+      <span class="num">${d}</span><span class="dots">${evs.map(e => `<i class="${corEvento(e)}" title="${e.hora}"></i>`).join("")}</span></button>`;
+  }
+  return `<section class="card cal">
+    <div class="cal-h"><button class="btn sm ghost" data-act="cal-mes" data-dir="-1" aria-label="Mês anterior">‹</button>
+      <h3>${MESES_LONGO[m]} <span>${y}</span></h3>
+      <button class="btn sm ghost" data-act="cal-mes" data-dir="1" aria-label="Próximo mês">›</button></div>
+    <div class="cal-g">${["DOM","SEG","TER","QUA","QUI","SEX","SÁB"].map(d => `<span class="cal-w">${d}</span>`).join("")}${cells}</div>
+    <div class="cal-leg"><span><i class="g"></i>tudo confirmado</span><span><i class="y"></i>aguardando resposta</span><span><i class="r"></i>falta alguém ou sem resposta</span>${ctx==="painel" ? `<span class="dica-cal">Toque num dia para abrir as escalas</span>` : ""}</div>
+  </section>`;
+}
+function viewEscala(){
+  const t = hoje();
+  const prox = state.eventos.filter(e => e.data >= t).sort(byDate);
+  const cardEsc = ev => {
+    const groups = PAPEIS.map(f => {
+      const ops = state.pessoas.filter(p => podeFazer(p, f)).map(p => {
+        const ind = p.indisp.includes(ev.data), ja = escaladoNoHorario(p.id, ev);
+        return `<option value="${f}|${p.id}" ${ind?"disabled":""}>${esc(p.nome)}${ind?" (indisponível)":ja?" (já escalado neste horário)":""}</option>`;
+      }).join("");
+      return ops ? `<optgroup label="${f}">${ops}</optgroup>` : "";
+    }).join("");
+    const lista = blocoTodos(ev) + ev.vagas.filter(v => !ehTodos(v)).map(v => { const p = pessoa(v.pessoaId), s = situacao(ev, v);
+      return `<div class="row">${avatar(p, s.c)}<div class="who"><div class="n">${esc(p.nome)} <span class="tag">${esc(v.funcao)}</span></div></div>
+        <div class="right"><span class="pill ${s.c}">${s.t}</span><button class="btn sm ghost" data-act="rmvaga" data-e="${ev.id}" data-v="${v.id}" aria-label="Tirar ${esc(p.nome)} da escala">Tirar</button></div></div>`; }).join("");
+    const on = escalaAbertos[ev.id] ?? true, normais = ev.vagas.filter(v => !ehTodos(v));
+    const ok = normais.filter(v => situacao(ev, v).c === "g").length, nTodos = ev.vagas.length - normais.length;
+    const topo = `<button class="ev-tg" data-act="tg-culto" data-e="${ev.id}" aria-expanded="${!!on}">
+        <div class="t"><h3>${esc(ev.nome)}</h3><div class="meta"><span>${esc(ev.hora)}</span><span>${normais.length} na escala${nTodos ? ` + todas as vozes` : ""}</span>${faltando(ev).length ? `<span class="falta">Falta ${faltando(ev).join(", ")}</span>` : ""}</div></div>
+        <div class="ring">${ring(ok, normais.length)}<div><b>${ok}/${normais.length}</b><br>confirmados</div></div>
+        <span class="sec-chev" aria-hidden="true">${on ? "−" : "+"}</span></button>`;
+    if (!on) return `<article class="card ev mini">${dateTile(ev, false)}<div class="ev-body">${topo}</div></article>`;
+    return `<article class="card ev">${dateTile(ev, false)}<div class="ev-body">${topo}
+      <div class="ev-top"><div class="t"><div class="meta"><span>Confirmar até ${fmtDT(prazo(ev))}</span></div></div>
+        <div class="right">${!ev.vagas.length && vagasDaEquipe(ev).length ? `<button class="btn sm" data-act="aplicar-equipe" data-e="${ev.id}">Usar equipe fixa</button>` : ""}<button class="btn sm ghost" data-act="rmevento" data-e="${ev.id}">Excluir culto</button></div></div>
+      <div class="rows">${lista || `<div class="empty" style="padding:12px 0">Ninguém escalado ainda.</div>`}</div>
+      <form class="formrow addvaga" data-form="vaga" data-e="${ev.id}">
+        <select class="grow" name="pf" id="pf-${ev.id}" required aria-label="Pessoa e função"><option value="">Escalar alguém…</option>${groups}</select>
+        <button class="btn pri">Adicionar</button>
+      </form></div></article>`;
+  };
+  const dia = diaAtual(), doDia = state.eventos.filter(e => e.data === dia).sort(byDate);
+  return `<div class="head"><div><h2>Montar escala</h2><p>Crie o culto e escale por função. Quem marcou a data como indisponível não aparece como opção.</p></div></div>
+    <section class="secao ${criarAberto ?? !prox.length ? "on" : ""}">
+    <button class="sec-btn" data-act="tg-criar"><span class="sec-t" style="font-size:18px">Criar cultos</span><span class="sec-n">agenda fixa e eventos extras</span><span class="tags"></span><span class="sec-chev" aria-hidden="true">${criarAberto ?? !prox.length ? "−" : "+"}</span></button>
+    ${criarAberto ?? !prox.length ? `
+    <section class="card panel"><h3>Agenda fixa de cultos</h3>
+      <div class="formrow" style="justify-content:space-between">
+        <div class="tags">${["Dom 08h","Dom 10h","Dom 16h","Dom 18h","Seg 20h","Ter 20h","Qui 20h"].map(x => `<span class="tag">${x}</span>`).join("")}</div>
+        <button class="btn pri" data-act="gerar-mes">Criar cultos das próximas 4 semanas</button>
+      </div>
+      <p class="indisp" style="margin:10px 0 0">Cria de uma vez todos os cultos da agenda fixa. Os que já existem não são duplicados.</p>
+    </section>
+    <section class="card panel"><h3>Culto ou evento extra</h3>
+      <form class="formrow" data-form="evento">
+        <input class="grow" type="text" name="nome" id="ev-nome" placeholder="Ex.: Santa ceia, conferência" list="nomes" required aria-label="Nome do culto">
+        <datalist id="nomes"><option>Culto de domingo</option><option>Culto de segunda</option><option>Culto de terça</option><option>Culto de quinta</option><option>Santa ceia</option><option>Conferência</option></datalist>
+        <input type="date" name="data" id="ev-data" min="${t}" required aria-label="Data">
+        <input type="time" name="hora" id="ev-hora" value="20:00" required aria-label="Horário">
+        <button class="btn pri">Criar culto</button>
+      </form></section>` : ""}</section>
+    ${calendario("escala")}
+    <div class="label lbl-row"><span>${fmtDiaLongo(dia)} · ${doDia.length} culto${doDia.length===1?"":"s"}</span>${doDia.length > 1 ? `<span><button class="btn sm ghost" data-act="tg-todos-cultos" data-v="1">Abrir todos</button><button class="btn sm ghost" data-act="tg-todos-cultos" data-v="0">Minimizar todos</button></span>` : ""}</div>
+    ${doDia.map(cardEsc).join("") || `<div class="empty">Nenhum culto neste dia. Para criar um, abra <b>Criar cultos</b> acima.</div>`}`;
+}
+
+const DIA_LONGO = ["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
+const slotDe = ev => `${parseDate(ev.data).getDay()}-${ev.hora}`;
+const slotNome = a => `${DIA_LONGO[a.dow]} ${a.hora.slice(0,2)}h`;
+const ehTodos = v => v.grupo === "todos";
+function vagasTodos(st, ev, excluir = new Set(ev.vagas.map(v => v.pessoaId))){
+  return st.pessoas.filter(p => p.funcoes.includes("BACKING") && !excluir.has(p.id) && !p.indisp.includes(ev.data))
+    .map(p => ({id: uid(), funcao: "BACKING", pessoaId: p.id, status: "pendente", motivo: "", troca: false, grupo: "todos"}));
+}
+function vagasDaEquipe(ev){
+  const k = slotDe(ev), todos = (state.todasVozes || {})[k];
+  const eq = ((state.equipes || {})[k] || []).filter(r => !(todos && r.funcao === "BACKING"));
+  const base = eq.map(r => {
+    const ok = r.pid && state.pessoas.some(p => p.id === r.pid) && !pessoa(r.pid).indisp.includes(ev.data);
+    return {id: uid(), funcao: r.funcao, pessoaId: ok ? r.pid : null, status: ok ? "pendente" : "aberta", motivo: "", troca: false};
+  });
+  return todos ? [...base, ...vagasTodos(state, ev, new Set(base.map(v => v.pessoaId)))] : base;
+}
+let todosAbertos = {};
+function blocoTodos(ev){
+  const vs = ev.vagas.filter(ehTodos); if (!vs.length) return "";
+  const n = {g:0, y:0, r:0}; vs.forEach(v => n[situacao(ev, v).c]++);
+  const on = todosAbertos[ev.id];
+  return `<div class="row todos"><div class="av grp" aria-hidden="true">${vs.length}</div>
+    <div class="who"><div class="n">TODAS AS VOZES <span class="tag">BACKING</span></div>
+      <div class="sub"><span style="color:var(--g)">${n.g} confirmados</span> · <span style="color:var(--y)">${n.y} aguardando</span>${n.r ? ` · <span style="color:var(--r)">${n.r} não vão</span>` : ""}</div></div>
+    <div class="right"><button class="btn sm" data-act="ver-todos" data-e="${ev.id}">${on ? "Fechar" : "Ver nomes"}</button></div>
+    ${on ? `<div class="acts todos-lista">${vs.map(v => { const p = pessoa(v.pessoaId), c = situacao(ev, v).c;
+      return `<span class="nome-chip ${c}" title="${situacao(ev, v).t}${v.motivo ? ": " + esc(v.motivo) : ""}"><i></i>${esc(p.nome)}</span>`; }).join("")}</div>` : ""}</div>`;
+}
+function viewEquipes(){
+  return `<div class="eqgrid">${AGENDA.map(a => { const k = `${a.dow}-${a.hora}`, eq = state.equipes[k] || [];
+    const vazias = eq.filter(r => !r.pid).length;
+    const linha = (r, i) => { const voz = VOZES.includes(r.funcao), lista = voz ? VOZES : INSTRUMENTOS;
+      return `<div class="eqrow ${voz?"voz":""}">
+        <select class="sm fsel" data-act="eq-func" data-slot="${k}" data-i="${i}" aria-label="Função">${lista.map(f => `<option ${f===r.funcao?"selected":""}>${f}</option>`).join("")}</select>
+        <select class="sm" data-act="eq-pess" data-slot="${k}" data-i="${i}" aria-label="Quem"><option value="">—</option>${state.pessoas.filter(p => podeFazer(p, r.funcao)).map(p => `<option value="${p.id}" ${r.pid===p.id?"selected":""}>${esc(p.nome)}</option>`).join("")}</select>
+        <button class="btn sm ghost x" data-act="eq-rm" data-slot="${k}" data-i="${i}" aria-label="Remover linha">✕</button></div>`; };
+    const todos = (state.todasVozes || {})[k];
+    const idx = eq.map((r, i) => [r, i]).filter(([r]) => !(todos && r.funcao === "BACKING"));
+    const nBack = state.pessoas.filter(p => p.funcoes.includes("BACKING")).length;
+    return `<article class="card eqcard"><div class="eqh"><h3>${slotNome(a)}</h3>${!eq.length ? `<span class="pill y">Sem equipe</span>` : vazias ? `<span class="falta">${vazias} sem ninguém</span>` : `<span class="pill g">Completa</span>`}</div>
+      <div class="eqsec">Vozes</div>${idx.filter(([r]) => VOZES.includes(r.funcao)).map(([r, i]) => linha(r, i)).join("")}
+      ${todos ? `<div class="todos-eq"><b>TODAS AS VOZES</b> no backing · ${nBack} pessoas</div>` : ""}
+      <label class="todos-tg"><input type="checkbox" data-act="toggle-todos" data-slot="${k}" ${todos ? "checked" : ""}> Todas as vozes no backing</label>
+      <div class="eqsec">Banda</div>${idx.filter(([r]) => !VOZES.includes(r.funcao)).map(([r, i]) => linha(r, i)).join("")}
+      <div class="eqadd"><button class="btn sm" data-act="eq-add" data-slot="${k}" data-tipo="voz">+ Voz</button><button class="btn sm" data-act="eq-add" data-slot="${k}" data-tipo="inst">+ Instrumento</button></div>
+    </article>`; }).join("")}</div>`;
+}
+let abertas = {banda:false, vozes:false};
+function secao(chave, titulo, funcs, card){
+  const ordem = p => Math.min(...p.funcoes.map(f => funcs.indexOf(f)).filter(i => i >= 0));
+  const lista = state.pessoas.filter(p => p.funcoes.some(f => funcs.includes(f))).sort((a,b) => ordem(a) - ordem(b) || a.nome.localeCompare(b.nome));
+  const resumo = funcs.length > 1 ? funcs.map(f => [f, lista.filter(p => p.funcoes.includes(f)).length]).filter(([,n]) => n).map(([f,n]) => `<span class="tag">${f} ${n}</span>`).join("") : "";
+  const on = abertas[chave];
+  return `<section class="secao ${on?"on":""}">
+    <button class="sec-btn" data-act="sec" data-k="${chave}" aria-expanded="${on}">
+      <span class="sec-t">${titulo}</span><span class="sec-n">${lista.length} ${lista.length===1?"pessoa":"pessoas"}</span>
+      <span class="tags">${resumo}</span><span class="sec-chev" aria-hidden="true">${on ? "−" : "+"}</span>
+    </button>
+    ${on ? `<div class="people">${lista.map(card).join("") || `<div class="empty">Ninguém cadastrado ainda.</div>`}</div>` : ""}
+  </section>`;
+}
+const BASE = location.origin + location.pathname;
+const linkPessoal = p => `${BASE}?t=${p.token}`;
+const msgLink = p => `Olá, ${primeiro(p.nome)}! Este é o seu link da escala do louvor Renascer Praise Jundiaí:\n${linkPessoal(p)}\n\nAbra e salve na tela inicial do celular (no iPhone: Compartilhar → Adicionar à Tela de Início; no Android: menu ⋮ → Adicionar à tela inicial). Por ele você confirma suas escalas, pede troca e marca as datas em que não pode.`;
+function viewVoluntarios(){
+  const card = p => {
+    const s = stats(p.id);
+    const cor = s.idx===null ? "var(--muted)" : s.idx>=85 ? "var(--g)" : s.idx>=60 ? "var(--y)" : "var(--r)";
+    return `<article class="card person">
+      <div class="ph">${avatar(p)}<div><h3>${esc(p.nome)}</h3><div class="sub">${p.whats ? esc(fmtTel(p.whats)) : `<span style="color:var(--y)">WhatsApp não cadastrado</span>`}</div></div></div>
+      <div class="tags">${p.funcoes.map(f => `<span class="tag">${f}</span>`).join("")}</div>
+      ${p.obs ? `<div class="indisp">${esc(p.obs)}</div>` : ""}
+      <div class="meter"><div class="top"><span>Compromisso</span><b style="color:${cor}">${s.idx===null ? "sem histórico" : s.idx+"%"}</b></div>
+        <div class="track"><span style="width:${s.idx ?? 0}%;background:${cor}"></span></div></div>
+      <div class="nums"><div><b>${s.total}</b>escalas</div><div><b>${s.pres}</b>presenças</div><div><b class="${s.falt?"bad":""}">${s.falt}</b>faltas sem aviso</div><div><b>${s.rec}</b>trocas</div></div>
+      ${p.indisp.length ? `<div class="indisp">Não pode em: ${[...p.indisp].sort().map(fmtData).join(", ")}</div>` : ""}
+      ${p.token ? `<div class="formrow link-row">${p.whats ? `<a class="btn sm wa" href="${waLink(p, msgLink(p))}" target="_blank" rel="noopener">Enviar link pessoal</a>` : ""}<button class="btn sm" data-act="copiar-link" data-p="${esc(p.id)}">Copiar link</button><button class="btn sm ghost" data-act="rm-pessoa" data-p="${esc(p.id)}">Remover</button></div>` : ""}
+    </article>`;
+  };
+  return `<div class="head"><div><h2>Equipe</h2><p>Compromisso = presenças ÷ (presenças + faltas sem aviso). Pedir troca com antecedência não conta como falta.</p></div></div>
+    <section class="card panel"><h3>Adicionar à equipe</h3>
+      <form data-form="pessoa" style="display:flex;flex-direction:column;gap:12px">
+        <div class="formrow">
+          <input class="grow" type="text" name="nome" id="p-nome" placeholder="Nome" required aria-label="Nome">
+          <input class="grow" type="tel" name="whats" id="p-whats" placeholder="WhatsApp com DDD (ex.: 11 91234-5678)" aria-label="WhatsApp">
+        </div>
+        <div class="formrow">${FUNCOES.map(f => `<label class="chk"><input type="checkbox" name="f" value="${f}" id="f-${f}">${f}</label>`).join("")}</div>
+        <div><button class="btn pri">Adicionar</button></div>
+      </form></section>
+    <div class="label">Equipe fixa de cada culto</div>
+    <p class="indisp" style="margin:-6px 0 0">Monte uma vez a equipe de cada horário. Ao criar os cultos do mês, todos já vêm escalados, e cada um só precisa confirmar. Quem marcou a data como indisponível fica de fora e aparece como "falta".</p>
+    ${viewEquipes()}
+    <div class="label">Integrantes · ${state.pessoas.length}</div>
+    ${secao("banda", "BANDA", INSTRUMENTOS, card)}
+    ${secao("vozes", "VOZES", VOZES, card)}`;
+}
+
+const norm = s => String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().trim();
+let busca = {q:"", res:null};
+let splash = true;
+function telaSplash(){
+  const prox = state.eventos.filter(e => dtEvento(e) >= new Date()).sort(byDate)[0] || proxCulto;
+  const nomeSalvo = token ? LS.get("escala_nome") : null;
+  const eu = nomeSalvo ? {nome: nomeSalvo} : null;
+  return `<div class="splash">
+    <div class="sp-top">Escala do ministério de louvor<button class="sp-replay" data-act="replay-logo" aria-label="Repetir animação">↻</button></div>
+    <div class="wordmark" id="wordmark" data-act="replay-logo" title="Toque para repetir" role="img" aria-label="Louvor · Renascer Praise Jundiaí">
+      <img class="sp-logo" alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAArwAAACyCAYAAACgLxwaAABJCklEQVR42u2dd5hkVbX2f6uqZ4ZhmAEGZsg5BwlKzihJkKQoVz8TouhVUTBfs169Bq4Bw1WvV1HJKFkByRlEkkiQHEQyQ5wZZqaq1vfHWZveHDpUd9c+51TVep+nnp6Znu6qs88+e7/r3e9aS3CgqjWgZn9tiUhrmP83DVgOWB5YGVjJ/jwbmAksCUwHFgcmAwPAJPvxhUATWADMBV4AngPmAE8AjwL/stejwBMiMn+Yz1EHBFBAh/u8DofD4XA4HI6MNPUjwRUjuAI0RUSHILarA+sDGwLrAWsCKwLLAtMSf8QXgKeAh4H7gH8AtwN3Ag+KyEtDXE/dCHArfz0Oh8PhcDgcTnj7S8V9lYKrqqsArwW2ArY0krvSKL+yZQRzqPEcaVx1mD+Hn6uN8p4PA7cCfwWuA24SkUeHUYBbrv46HA6Hw+FwwtsfJPcVKq6qzjJy+3pgR2AjMhtCHs2IlErulfSj517h/etD/N/njQBfBlwCXC8iz4w2Bg6Hw+FwOBxOeLvfrvAKb6uqrg3sDuwNbAssMwy5LZLYTpQIx97jgMeBq4A/AheJyEM58itue3A4HA6Hw+GEt4vVXBFpRP+2FvAm4EBgG2AKr7QHtBj08nbrWCiD9oo8AX4RuBo4FThHRB6OxmbALQ8Oh8PhcDic8HahmquqSwH7AO8AdgWmRj/SiHyyvWrnCAQYXmmBeB64ADgBOE9E5sWqr4g0/XFwOBwOh8PhhLdiRDcmaaq6GfAe4K28MuGsH0juWMnv/cBJwLEickcueHC7g8PhcDgcDie8VSG6pk7uC3wQ2DM6zg9EuNavpddGIL9xJYgFZF7fX4jIBbkqD058HQ6Hw+FwOOEtkeguTmZZ+DCwOa9Uc+tOckdF8C8PRP92NfAT4A8isigQX7c6OBwOh8PhcMKbnuzWc0T3vcDHgXVz9XBdze2M6nsL8H3gBCe+DofD4XA4nPCmr7qgIqKqOhl4H/AJYB0GbQujNWpwMCbVVxn0+t4CfFdEjo/uB17VweFwOBwOhxPeztsX3gZ8AdjEiW4pxPda4D9F5JyonJk3sXA4HA6Hw+GEtwP2hW2B/wTe4ES3EsT3TODLInKL2xwcDofD4XA44R2ffQERaanqcsBXySoviBPdShBfbPwXAD8EviUiz3k1B4fD4XA4HE542yO7A6E7mqq+F/gmsGKUUFX321QJNKN7cQ/wWRE5DVd7HQ6Hw+FwOOFtS9Vdl6wywD4Mlhcb8NtDFas6NKN7cyLwGRF52NVeh8PhcDgcTniH9+p+CPg2sKSRKS8vRlf5ex8DPiEiJ7ra63A4HA6Ho+8Jr1VgqItIQ1VXBH4KHMCrj8wd3YFYif8tcKSIPBPbVBwOh8PhcDj6hvDmLAz7Aj8DVvLuaPRK84o6cBfwARG53C0ODofD4XA4+orwhmNuU3i/CfwHveHV1eir5v6t3bGX3J/pcrW3CfyHiBzlFgeHw+FwOBx9QXjD8baqrgD8BtiDV5a66hZiqzliW0vw+VvR2EjuRZd4e8PnPQU4zMqXucXB4XA4HA5HbxLeiOxuS5bRvxrdoepqlJg1ErFtAc/a6+noz3OBeWRq53wb56lkx/6LA0sAS9lrZvRnGaEkmEb1iKVLKjn8HXi7iNzmpNfhcDgcDkdPEd64PbCqvhP4JbBYhRPTNCK5QxHcl4CHyDyqtwN3AvcDDxvRfUFEFo1zrCYD04FZwMrAGsB6wIbAusAqwORhlOAUKjMdtjg8A7xTRM5x0utwOBwOh6MnCK+RXbHktC8BX49IWq2iKm5ecX4SuBm4GviLkdyHR/KihuumPQvCy/aIkZK6VHWSEd6NgW2AbYFNyFThPLmsIvkNAY4CHxWR//FkNofD4XA4HF1NeFW1ZkRXgJ8Dh1Wwtm5QRwdyxOwm4EJ73SgizwyVfBddxys8veMlcDZWDEGWWyLSGuL/zwK2AHaz1yYVJ7+xX/tbIvJ5q9ihTnodDofD4XB0FeGNyO5iZH7dAyrk19UooaoWkdyrgTOA80Tk9iHKqNXaVWMTWkPi1ytIsH1/U7IOdfsBW+VIPFTDQhL7en8lIu+PTwL8MXQ4HA6Hw1F5whuVHZtuBPL1wCJgUoVqxAbcCZwM/EFE/p5Psgs/U1X1MfijjSw2ct/bAjgYeAuZFzgmv1VQ2UMA9AfgHSKyKARK/ig6HA6Hw+GoLEJDCVWdqapXaYaFWi5aqroo+ntDVc9S1f1UdUpMHlV1IFxDF469qGrNiHr879NU9WBVPT83Lg0bmzIR5sbZdhpAt46/w+FwOByO/iK7y6jq9UZkFpVMdBvR359X1Z+p6qZ5JbcXSdYw5HdrVf2Nqs7PEd8qkN4LVHWqk16Hw+FwOBxVJ7tLqupfKkB2YxL3rKp+T1XXyJHBepQk1sv3Ruxaa9G/baCqv1DVeRUhvoH0/klVJwe12p8sh8PhcDgcVSJUoqqLq+oVJZPdpr3UVMwfq+rqsb+4n4lUIPrR39dX1V9HYxaPX1mk9wz7nLV+CEgcDofD4XB0kW9UVc8t0bOb9+meoqobO9Ftm/huqarnROO3qGTS+7vIbuKk1+FwOBwOR6lkd8D+fFyJZDc+ir9JVffOEV0nTO0T37ep6l1RENEskfT+IKqW4XA4HA6Hw1EKWQpk96gSye6iyL7w5VB1wRXdcRHf4MOeYfe0WaLaG97z0056HQ6Hw+FwlE12P1ISKWpGJbWuUNXNch3QHOOsoRz9eUdTzMvw9sYWlbc66XU4HA6Hw1EKKVLVPUuq59qISNiXo8/jfs/OW1UWswoXZVRyCJaKear6Og9mHA6Hw+FwFF1+bG1VnVOCzzOofner6s5x4pzfnaRq776q+mgJan6YWw+q6my/1w6Hw+FwOIqq5zo1OupulNBE4jRVXcaPuQtXe1dV1YtKUPXDfb8wmoOu5DscDofD4Ujq2/1NwUpfrCB/xb26pd77mqoeXYKvN8y1b3ug43A4HA6HIzXh+UDBZDeoe/NU9eBuqMAQNeKoRR3dRnq93GShysplrpLDv+eaVRRJevfzgKezpzY+Eg6Hw+HoJ8hwREdEWqq6EXA9MAmoDff/O4gmUAceBd4iIteo6oCINKpAFOz6Y+LdEpFWB73S4XdreImIVuC66yLSUNU3AicBM6J7lRJhbOcAmwGPANKpMe83ohvuo4+Gw+FwOPqe8NrGWDMycy2weUHkpgEMAHcCbxKRe8oiu0OQ2+ZIxFNVpwFLGBGcBixurwEjrmGsFwHzgPnAi8DzwAsiMr9NItwqiwSHe2HVE84CVixoXoT3OF9E9lTVuog0/dEdH9G1uboPcLaIzFdVKTuocjgcDoejDMIbiM13gM9ERLQIsnsjsI+IPFY02Y2IpQ5FqFR1aWA1YO3otQqwArAMMB2YOoaxahjxfQ54mky9fAi4B7gbuBd4UEReGKaagnRSYR4j6V0HOBdYq+D5caSI/NBJ77iI7uLAe4BPATOBFUTkJSe8DofD4eg7whuIhKpuB1zJoLomBZCZq8mU3WeKIjQRyX2Fgquqk4H1gNcBW5Edp68NzGrn1+a+DjXm7Y7nY8BdwE1k1pLrgbvjsYmuoRDyG5HeVYDzgA0LUHrV1O2FwOYicmew3fgj3Jai+x7g48C69t/uAzYUkQVOeB0Oh8PRV4Q3sjJMIlNaNzCSUSuA7F4L7Ckiz6cmuyOQ3DWBnYA3ANsYwWWYI3YdgrzKSL7oNoix5n5vfZj3vgu4BrgIuEJE/pknO6NZMDpRr9cCoxWBiy04SE16w++/0u5TIPlO1oYmuktERHcd+2+LbAz/CaznhNfhcDgc/dxN7ZsFVWUI1RhuVNWZKbPwo1qu9dy/b6Kq/2GtiucP8xkXldBZLl+LeNEw9Y9fsFq1R6jqevn7mTIbP5ovq6nqfQXVaA5z8iNeteHVdZMD0VXVj1qjlngexyXlHlDVKRFRdjgcDoeDnld4I8XuNcANZOpZyqoMQa27B9jRPLsdV3aHykxX1dWBA4G3kim5MoR6Wxuj9aAwfsPg8X5eBV4IXAWcApwpIo/myGnH1dBo3qwLXAHMTnwqEK7/RWAj4F/9WrVhGEX3EDJFd61oPksu6bEGPIgrvA6Hw+HoY3X3kgKUuqAyPW7JTx1X6oZQveqqureqnmKqaF41LEvB7aQCHGOOqv5WVXfN+287rehF9Zq3UtW5dn9bBZwMnNSPKu8wiu7hqnrPEIrucM+eK7wOh8Ph6Fuy+44CyG7LNt2XLDGuox20hiADS6vqR1T15iFIbrNLSe5o5Dd//65R1UMseSkJ8Y1I737R+BZBel/fL6R3iLk9XVU/1ibRdcLrcDgcjr4nvDVTif4ZEdJUhCwokW/vJNkdggwsp6pfVtWHc5t9o8dI7mjkN77Wu1X1k1ZereOtmiPSe2QBHvBAeG828l7rVeI2xNyeYZ7te8dAdJ3wOhwOh8Ohql/NKXMpXoEAfcPec1InFWr787J2LY+Pgwz0Kpo51fchVf20qk7vNPGNSO//5Uhvyvn0oV5UeYchukdGCYLjmdtOeB0Oh8PRlxDL7r+RrDNYymQrAc4RkX1sI59Q6SwrL4a1QF4M+DDwSbIOYJCVPKtXMPGsLLTsFUjUvcB3gF9b4tmEE9tyXfquBLaM7n0qPA1sICJP9kIC1hDJaDOAQ4GPAaszdDLaWOaAJ605HA6Hoy8J79nAnraJ1hIRLQHuB3YA5kw0sz7uwqaqbwG+Rpa170S3veCjGRHf64Avicj5+bEdbyBiQciawGUMNuuQRHWcpwBHi8gne6kDm6ouaUT38A4QXSe8DofD4eh7wrs2WUF6SUiwasDT1lhi3BusqboqIqqq65MplPs50R03+dGotNlxwBdE5KFYPR+vSmn3aBlgRhT0pJhb9lHlgR5QdgGWAt5nRHe1DhFdJ7wOh8Ph8Dq8RW7qEyC7oaVtDfgU8CVgiQ6SgX4mvtj4PQV8UUR+MVG114nUuOf3J4DvdZjoOuF1OBwOR19jIKh5Rezp49lYTfkSIwObAj8Gdsw1sHCMH7VIIV8W+Lmq7gd8TETuHa+31xTeopp3aA+RtgGb101gsk9Ph8PhcDg6sLlWuUtV5MlUVf0Y8C2y5LpgX3Cy21miFfy9ewPbqOqRIvK73L0YE+mNbAeO9m0adR83h8PhcDjouLpX1SPepqrOVtXTgKON7IaEK/fqksTiEhTGmcBvrcTYNLsXAz5EDofD4XA4nPB2qP6oWRh2AK4BDiRTddVV3UJQj9TeQ4GrVPU1dk+c9DocDofD4XDCO8FM9eDX/SBwMbCmkV1XdSlc7a3b2G9qpPdtdm/q3rDA4XA4HA6HE97x1W9Vq+H6A+DnRnLjZgkOSkuimg6crKpfCl7eAhMeHQ6Hw+FwOLqb8FpCVEtVl1DVM4AjyJRFvNwYVbM4fF1Vf23dwFpOeh0Oh8PhcDjhbbMSg6ouD1wI7O8WBqpucTgEOFtVpxvpdV+1w+FwOBwOJ7yjkN01gUuBrSOy66CyFodFwF7ABao6y+6hk16Hw+FwOBxOeIcpO7YecAmwnpPdrsEku1dbAxer6opOeh0Oh8PhcDjhfbWy21DV9clsDKs62aUbld4GsDGZ0uuk1+FwOBwOhxPenI1hXSO7KzPYTMLRnaR3QyO9y9m99UQ2h8PhcDgc/Ul4rfRYU1VXBs4DVjKy66pgb5Dec1V1Ka/e4HA4HA6Hoy8Jr5HdlqouDZwDrGFEyclu75DezYEzVXVK1EjE4XA4HA6Ho/cJb+igpqqTgNOB17hnt2dJ707AcSLSArwjm8PhcDgcjt4nvEZ46tad6xhgZye7PV+y7CBV/Z6IuILvcDgcDoejLxTeUJHhy8D/M0LkZJeeL1n2CVU9zO6932+Hw+FwOBy9SXij8mMHAl9zZZd+akXcBH6qqjvYHHCl1+FwOBwOR28R3qgiw7rAb4CWvZ97OumLNsRiwc1Jqroc4JUbHA6Hw+FwUJbnMmWS2hTgJGAGXn6sH4OpJlnpuWNFZA9Vrauqioj68Dgmur5EwdWQ/81e+HxzOBwdWFc0/urrSin34eV7MJ7xH0js2/0RWakqtzLQt9aGBrC7qn5RRL5hft6GD41jDItfOBlSoGULnXbgdzgcjv5cV2rRSaSKSHMc60otOiVvjZeE+b14xfrcsgpP2m5BhDD+9nPFEt7It7s/8GEnu056bQ58TVUvEpFrQrc9HxrHKBtJWMSaue9PBZa213RgWrTwNYG5wHPAs8AzIvLSEL8j/x5V3ZCTvk3Z1x5tdkkx3HpTcG6BVnGulTgehQWeMakSkcZQ90FVZwAzgSVtXZkaPYMLgBeB54E5wLM2p1pDjJ8AzaqS34Lu8aj3NnwOG8dm9O+TgNl2L5ay+4DxiOds/J8UkRdj8SxaM4d974EEi7Sq6mzgF8bS3bdJ3/t5A7k4RlVfCyzInA0eDTteFa03bTNq2b/PIqvb/TpgE2AdMpvM0kZ0R8KLwBxV/RdwN3AzcANwq4jMid4jfu9KzMmqE6MOXqfmg5GC379Z9Dyv8rrXa0JECGytRGZMqtYkO31+LbARsCawvJHdySMROSNdT6rqg8AdwE3A34A7LLjOE8tKnSiVfY9tXFrhc6jqdGBrspK1rwPWtXsx3Pq+EHhaVR+wNf1K4GoReSB6j4Gh1nNJoO42VfUU4K3u23VECEr/j0Tk46o6YIuQwx5QOxn5NPDdRCcjIXH0QWA9ESk98AhRebwIq+rGwF7AnrYALj3Sr+DVx18yytr2lBHfPwPnicgducW4NCUu3A9VXR9Yzq6t00pv+J3PiMgtJV/nSsDaia9zIXBdtMGG914C2IIxHGNP8HM8LyI3VXwd2hpYLNH9iMejBtwuIk+kWIPyz7HlE+0A7A3sCmwITOnwunIfcBVwHnCRiDw+BMnTku/vJGAr21tSPnP/EJHH43sbktaje7ID8C67JyuPsGe1cw/m29ifAJwmIs/FnLTjhDciuwcCp7mVwTHEgxAI144icpVbG/qX8IYjxoiEzLYg+e3ANrlAuRUtfJJ70camFW9e9dzPNXIL5VNlblDRPDgZeFvit7tCRHYKbd9Lus4jgB8kfrvngJVF5MXQ+dEI75JGUmYWdNlzgdVE5OkqKb3h/qvqOsBdBb71+iJyZyfnX/65VdVNyOr/H0h2OhSjGRG0dhJh84lr8bqSX6vnWEB9LHB+tM6Vta6EIG854OECuNkhIvKb6DmvR2PwJuBTZIpufo1vZ33X2Ddt/y/eL/5J5jD4qYg8G5wHItKZMlG2iIQF5EduZXAwtLUhfP2ZRZp46+H+sy7YIqgWIK+tqj8EbgV+Amwf+b6b0VoyYK/6GMobBjtNPfr5kLjWjIKKnW2BvFVV/1tV1wxJLCXWj15gC/rCaDPo1GuRfZ1fgSmxKOF1Bo/l3LyNwubgc0ZIUr1/fsynkamLVOzkM+zVe9uzsTDxODSBcztJdm1dqUfP7W6qeibZSc5njOy27JkPRKk+xJoibZbczK8rRL+/aUHU24FzgBtU9UOqukQF1hUls3rFz0eKtWVRGK+oRO0mqvon4Gxbc9XGK17j21nfJSK54WfCmt4EVgG+Adyoqv9PRFo25rVOkdIwab9m0nTTCa+D4RPYXgMcYRGfW176KBnNiG5DVVdR1R+TebA+DsyKFiyNFrIUAVG8WMYL5XLAJ4GbVfUHqrpSpErUSvS+p3xVyeNf5HUGlejkaLNN+f4h0Dog9/5VQCCc+0fPRsqxqAMndqoXgBHdEEDvpKrnAxcA+9l9bUSnWwMJ+wHUhiBgLWBT4Ge2rnzQgq2mlemUkgKc5M+bXVvDTg8+BVxrQVUg2xKJEJ1a0+sRkV4DOE5Vj1fVGSLSqnWwwcRrgI+4b9fRBultAV9S1ZWBpjek6BvLRktVJ5lt42bgo6Z6NSLFpV5wc5qhFsrpwBHATar6CdtQW94im15KlmvahnwdcJtt0q3EJEOA3VR1evT+VbEzrEJmJUrZkCo8488Af2LQVjARVTfwj9VU9bfAZcDuEanSiORSwrpSiz7LWsDPgWtUdY8KqL0pMclsGzNV9XTgKLJqC80o6Ek59gOR4v4O4FJVXafWwaPq70XSvh9TO0aaL2qk4pv2UPh86W0LQ81U3a3JMmq/a0d+jWhDkorMzYGI+M6yde0KVd3CrqHmNpzeCb5NwT+ZoRNkOk14W2SnCDuk7nQ6ls9l83lPIySNhM9iIKDniMicoMxOUNVtqer7geuBd0fKaq2E4Hmke1+PiO8WwJ9V9X9VdaYR9l4Lpp9R1eWBy8lONWJRo8hxDwr/5sDFtQ4lqr3RoipXdx1jWfzfaUSi2aNRrlsYBjelzwBXkGUIV43ojkZ8twWuVNVPxX4wv8Ndj0BwT7H7XC/g/ZTMOlAVYSg0SyjiMwWV+/iJBI2RJWBZqwj1S2DZiKzXK7zv1SO/6weAv6jq60NiVw8E0+HzbwlcRFYNo1HyWh/4xtO1DiSq1YH/qpgnydEdKm8N+KYPR0+S3WADWFJVTwW+Y4tes8JEdzji2yQrYXSUqv5eVZe0a/MgrbttDS0Lyu4Erg4NAwogfHup6hQjOVLm6YsRx1nATolV5+ChfQi41Eh2awLVPbYGriGr7BIH0HSJ4FOzz702cIEF080eSOQO8+cLRnZbFbgvgWucVZvgcVDLJtxmdmG+ATjG4uVtAnuo6q6u8vacX7epqmuTHWm9OeqIU+/SuRrU3oOAy1V17R49iqQPT5sgK0uXOpksKE2rkRXaL9vWEBTFNwAzokSilGr6aSIyP1RqGSfZPRi4xMhio4sCaIZo/BXG5ShV/T/jVb1wghSXIa3CM67ARRP5MC0rLfVFV3cdE8RXKpi57JhYfdXXGdndpMs3JXJqb8Ou6fLI1+ukl663NZxJVq5pIPE6FFdEKNvWEOwMBwzTaKHTQSMMVmcYL9k9HDiJzG/c6oFa/0H1bwCHAmep6rRw+kD3d1itAvEWstq819cmknFNptxs5OquY4IVG3ZW1Z39mLgnbAwNVd2KrCzQCgxaGHoFweKwgh1FbuOkt+ttDXUReQw4P0p6Sl7zNrQ/LdnOsCSZwpvS+xoaCtwCXB/eexxk93Nkdf6bFVIPOxlMLwLeCJwXymh5rgCdSJQEuFZE5tYmoO7WyAo6uyrnmGgEBvBZV3m7nuw2VXVza625dA8nsQY7zlK2OW0Zkk58JnQn4bCj/RPabD7QiePV9YDNSixLFfb+ncgSvlqktzOcbEJZfZwd+b5FpoRWpYZ0pzHJSO8OwNmqOtXypJz0ThwXj8s/FJJRgN2A15ZQasLRmyrvnqq6mau8XVuNoamqa5J1Flq6Dyq2BNK7JPBHVV3HxsA3p+5D0472/ww8Hq1JKVUnAfYt0dYQ3vOAyG+Z8llZBPx+LOXfIrL7LrL2040KlRpLTXp3svGSKCBzMG6f9BXjNcwHBe4IV+QcHc7gPdyHovvq7NrXGWQ+yOX7qDxhIL2zyRSZpUyR8c2JrrI1qAk5L9ocTl2TN8yPfW2uNEuwMzRMQdwjsd8ykPurROTudlsJR/aonYBfR2tKPzxbgfTuA/zUO5JO+GThXuAuVZXaOLuybEBWd9fVXUcns+DfqqrLu1LWdcX7W8BvgY0ppp5pFdtlrwccb0qhN6foXhxP+uoJYb3bBNighKz88F7bAisX5Idte1yjE6OVyVTOgQKsJlUlvR9S1Y96nsCECO9lItIA6rVxPijvj5I3HI5OKB5Nsu5r76hQFyJHe0eOn2Wwm04/Lsoh4WRvVf2qKzLduTlakHINcFcBrYbDHNmnhPVOokoRKe0MQRB7HjirnVbCdg/EAoATyE5PGn26HwSO9YMoOdbXlbHP84sY60MWHYNMA/7NSYkj0eQ8xB5qD6a6pyLDN73L4ssly75iFUd8c+oyW4OdViwi67xWlK1h/wLeK3+tDSspuncBdgYF/iwiT7TZSrhmAeNXgB37OIgmUrUHgGNVdbpbpsYcbL1E1lQGoFUbR5HqNwIrRv2qHQ46mLy2MbBtidnLjvZ9u4sBx0Teun5eiGPi8CsTBvDNiW48Aj25gAAuzJUtVXWNokpQRWvq68gaN6S0M0iulbC0WellS7L6/n5S8sqObEeZfcx5V/u5ZreIyEMm2I6J8IYi1e8qoEi1o783nHdWqNe8Y3gV5vMM9kr3RXhwc1oL+IaNkY9L97UavhX4a+JWw6HZwGQyEamoE9Owpu6XWFkOCtsjwIXGHZptBNEDwM+jsfA9YNDa8EHvSjpmLnEpUeOT2hiLVK9A+iLVDm/zuZ91m2m4Qla9EmTmd1yPrA63qzAMWbnhcFXd3Denrl2DTiygClEZtoaQEJzaOxzI7RkiMreNVsJ1CxA/TFbutOHrypBz5ceqOtmtDW0/xxfHz3FtjHaGvYFpiXtuO/p7koYuVru4T7yqQpgo8F1gSoVUmKqcOklEfL/vpRvpVmXoNGAeaVsNh7Vte1VdIbWtwdRrJbONbWzXVSs7cAil2VR1Npl3t0rH9lVZV8Lp0UbAv4+1gQf9Z2eoAc+SndS8/Fy3O6la9qC82e0MjoIWmAN9KCrbTW0nsiPRstTdcDzaiAhK8AjG32uWtFYFlXcXVX2TN1PpSlvDw8AliasYBMvENGB3I34piV743W+KxIWUddXvAK5to5VwIOKfA2aWSHhbtm5UdV0JlUO+oKozLUiQHt3/dQJcM9y760RkThTotVUTT2wRmEXW8s7tDI7UD7UAe6jqVCNYfppQrUSAr1Oe+taM1qCBaA1rMdgeNXyvHpGKVknj9TUjuy4SdNEaZGvO8QWcXoR5cYBtypq4FBqk7/AWnrVTQv3TNixSqwIftJ8tml80I1VwYIh1RYdZVxoFP9eB8M4CDg+VRbp8P8kHETLEa6hApJ1n6uL8KfHAGAqr7wTMcM+eo6CHehWyTOIrE6sRjrGruzsXvDFp7v0et3lxDXA78BjZ8bOQqWUrkB39bWdB+sxoY6sVZMEIKu9rgX1E5Kwwhj6b6IpWw6p6LvAUsGy0GaeYJ5CdBsw0RUraKN/FOJtGrW3rakq7WJj77ZR3q1muxhHA4gWXIWvlBLw7yFrQXg/cDTwNLLTvzwBWAzYzLrRV9DmL5EQ1m4uHq+qPgWdSzJeCiO7AEOPWABZEYzrVrrmWu28jkf16LmFNx0J4A/ZyO4Oj4FbDuxuxcYW3OvhUwb7UMBfqwE3A0cDZIjJnlJ/7o230y5FZsT5KVlGCgo9MFfg0WeF9XzvpqlbDz6rqH4H3Rht0KlvD0sCuqnpaJDKlEBL2JuvilYpYBqJyrYjcPlIr4ai2/yzgkII7t8Yk9fdklSEuN0V6OFxLVrIOVd0IeA9wGLBkgcF08PIuA7xPRP7bKls0uuTxakZK+ULgOgsy/gY8CDxp4kX4f9OBlcg859sB25OJYQwTbIS1/WHglnzAVWuzSPWARTXiSUSOAhN/Xt9Odx5H+soMpu6uT1ZCqaiNKWwizwOHA1uKyG9NBaur6oB9reVe4Xs1EXlcRH5Gpmp9ztSDok4MgpVhB1Xd2r28eKvhkX2LKW0NrVxFiNTE7MQ2xq0elaFcqsBk+ECS/gbsKiJvE5GLA9cZZl2pR98TEblNRD4DbA6cFF2LFqjyfkhVp3SRlzeM+zPAfwGbiMiOIvJ5ETlZRK4VkXtF5FERecK+3iUil4jIj0Xk7WQndwdEAkI9srPF8/xqEZmfb3ZSa6MEEcC6ZIWP1Qmvo8CSIpup6nIl9Jp3DH0/3ldgS/GwON4ObC8iPzGvX9hwmiLSsK+t3Ct8r6WqYiWRXhKR75DZMR6Ijl0pKOv/gz6N6MZWw1cA9yduNRw8obup6hKdzluI7AwrA9smJPCBgMwFTm/DzhBK9r2/wIo8wVN8LLCdiFxqZLYeFOdh1pVm9D01EjwgIvcbEftoRHa1IMK7FrBHl3h5w3p+KrC5iHxBRO4M63MuyJDoFQcbdRF5QUTOFJH9gW2M+NaGEDEuGiqwq7W50W3jPkoHxSq8LWAJBv1mbmugtK5qTVWdChxc0MYUFsebgV1E5FZVnSQiGjacsRxPh3rO9jv+YqT3rkgdILHKC3CAeTQ9CbO7Wg0vAP6QuE5uWO+WJ/Ocd/oZC0l4e5J5IlMpqSHx6CIRecQISmuEnAC1692wIJtRsHEcLSLvFpF5wVdvr7GsKy1bVwLx/SlwUDQGWkAgrcChXVD6MAQZ/yUiB4nIg9EJnA4RZGj0ioONpq3jdfvZ64z4vpXMDhEnE14+1DPb7gTb3pdAR0n1MLd1wkvZXdXU6iKvWsDGFJLTHgLeKCJP2oayaKIERkQW2e96yDb/xyKyQeLSU0uTlYPCk367rirJSQXYeAKBSWE5CF1S9y9AqGi3lXD43jsKaroRPNgniMgRkaLbnGgZOyO+k0TkdDK/d62A0mXxqcCKFQ6kw7j/UES+EBHdxnDBUBvreDOUD7SA5Q9kSYSn2rjcDdwdKoyNhfCGQXytNwFwlOTj3arALkSO4fHWxDVJYy9jAzhYRB4zgtrooHLXsN/5APD2CdZ7HOu1vc0bUXSVyhv2v5vslbLVcEh42ktVp3Sqy2TUJXUW2clGajvDE8B5I7USjpLVFid9x7c4iL4NONTscdrJygYWTE8SkeOBo4zkpQ6kG2RVaaoaSIeTumuAT5h9pTkeojtCsNG09fwJETkI+BFw5XBt3WttdGVZDljHVTZHSYR3I6vH2/KjYAq3M9iCsjiZIioFbUzfEpFrbQNpJCAygfReaptTamtDIDM7qepstzV0FcLR+0mJg5XgEV49CvI78ayFLqmvZ7CsqCSs8Xu2iDyfTxYahndsS5aBn/LUSKPPd6iIvGTdIlM87w0jdZ8nS4hLnScguVOBVgX38Abw4TAXUpRPi6wlIiIfZ7CSUKttwhs9FOtbFNFywuug+ESpFYA1POAq9R5sCayYeGMKv/s+4Fu2caQstRMSZr5OlsRWK6Cj1nQGVTa3NdBV1qo/kFX4SNlEJLzXfh1c74KSeUDik4ywLpwwBjFj7wKIWlD6fi0if7FAt5nQ940F6R8jXe3mfCC9vaouUzFRqGGf71QRuTl1DfLg/TXS+/xw5LodwruxHyk7KO9IpAZs4JaaUlX23QpYA8Lm8A0RmW8qTLKjf/vdIiLzgP+M1JLUdo09fFp1Zavh+8kSYVJ6vsP6to+VAm126IRmBvCGhF1SQ7B6D3BlG97YZqQ6pxQy4qoRX7f3bBVgg6mLyOXAOYmT/cP1LEna6hsTmctHF0nCA+kd7UONhI182XNQbtLIhj4UlKlu7VxAK9I6WabtSaEyRBEBlb3XCWSlp+qJyYyQ1eStd1HtTMcrWw0XUW5qfWDT0ACjA6RjJ7J2tKnsDOGZ+b2ILBytlbAFm6sWIGSE6z1JRB62BNxWgdVt/quAk8lwPbtW6BQ0BEC3kTWWoMgOkyMJJbU2BnJdP052lIz1PdmnFP9uS1WXAV6TeGMKa83vTN2tF9EqMyo99RLw6wJKT0FWz3yNoDD7TKNrWg2Tde97NrGtIZC0fTu47+6f2M4QAsWT22klzKBNakriZhPhPv2iYJWxaV+vNsKXWuWFQYW3WSGh5Fwbi3rVPHrDbXYDFok54XVQ4pH6mm6rKW1t2IisC1IqD79GyR0nlXCfW1FnqIUJyYxEJXo2d4tOV7Yafho41+ZHagKz70ROOiI7w1Rgr4QJp4Gw3gDcMlQpqGGwdWIRI3yuW4Dri1YZI5J3bAHJjiG5e9nRjvQL3rcvqZpQNdoDsAxZlQYnvI4yH5yVrFSP+jFw4WO/eWISGoj034A7xrBhdtqjeS+ZGpPS5xcW/i18etGtTViOT1ytJARcmwLrT6DLZNw0auWECadhTp/YZsevVm5dkcTP2pkldSIL1/lHsmTHgYSBtJJV4Fi/AoF0GOsFwK3dQnjDJJxN1u3KCa+jTNK1rL18HhaPTQryaV9QYovMsA6em3iBDnP3NW7R6Tq0bH5eDPwzcVWPcAw8kRq1kqv40Er07A4ALwGnjfY+0cnxYqS3SoYxu6CMZy1UTLB63zclFg2auQIDUoG8m4eAR7qN8C5fQCcih2O0RXtqRHgdFFYhA2C9gjamy0tcHMN7XkbakmEv+3hDeSQ/segqW8OAecxPL8jvPZH6qk1VnZS4sUP4XJdau9jRksJePrEzbkFCm1SNrAnG30q0w4V15NKC1raNKpRo/mCoj1tEPkYnCa97Jx1VIF6zXeEtNGFNTYlZrYCNaX7JG1N4z1uBpxOWKAtjuKIHcF1dNeaExIHRy4ldqrp6sN2M4fkNSZ+bkzWN0sTH3KGVcK3N+b8aMClhXkB4nm8RkRdKJF3hPa9JvHfFCbFl87Vwzf+sYp7CaB9mtq9xjopsMrOc8FK0sj47sZUk3NsHgEdTdeJpt3ajiDwH3Jlw0whEepqRXp/P3dlq+HoLjiThPGmQVTHYq00yOZKdoZnQqzkH+NNIrYSH+FyrJyZmYQ25pWTSFT7HbcCixAmxAKtGtpGy15XHqXAm9nBwFcJRFSzjQ1A4ZgOLJewYFBb/e2yRLrN8TXjvfyQ+fmxFx7pOeOnKVsNFVBQJ8+IAI5OtMdoZasCbEhK+QG7/JCLPjNJKOI9VC7pXt1dErHk4BPSJCe8ssuS1KuDpbiS8S/n65qgIfC5SuMK7XEFKzL0VIn93F7QJruCEl25uxvJ70qp2YW/eXlWXb1e1i47vNyJLYkplZ6jl7AxjwYoF8Zr7y0yaik6OFjB4xK+J98ilK7KuvNhNhDfclOm+vjkqAp+LxRPeWQVtGP+s0LU/WNCG4Xax7m41fBdwdWJbQ5OsStLuRirrY2lPHNW3TtVJ60HgsjEo0EXZ00LHukcrUCWgllvjUpYmmxQR3rL3jnndqPBOdRXCUREs7kNQOIpaPB+jOl7xxwta85b26UW3N2U5oaA5GWwNOgarwf4J53Egt6eKyEtWvULHcD1LFTBmc4FnKkB4paA1Lj+2UpGTkEphYJTvTyYzzze9ZuSrJrAMMbFknJM0/rN6jc5XoGFfp/hQFI4lCyIOVdiYNPdZal0+tg6SV445E/hvstOnFD73oOjuqqozRWROqKAygp2hpaprA69LaGcINo4Tx/jchv9XRG3/F6nWsfpTBa1fS/jjOX7Cu5T9nwEfqqTk2VX00eeoE4TiMZX+83u9GJEXTfhcLu6Bbde3Gn5cVc8H3hy1jU5ha1ga2BU41chmY4QAskXWSniS/b+BRE0x/gbcGFoYj8XTmnhdCc/sfLJuX1XB8wW9zzTnE2MnvBpFsA/YJK/1KOGMS76E0iqLolczimon2cO6uEX1S9jX6fZvk+3/1EcY20b0Wkh29PKCvV60r/PIutcsjI4GwvtPit5DouODdo+8ulFNGaDcxgROeNMGfPMrdM3huZ9cQDMVRxfvHVGr4bckbpGrwAFGeLWNY+T9CigleJKpyQMjEPBX1fa2zzS5oOe4WaH5Mq8iIqYT3qGM+fb1v+nPwvuTyMoGrUJWJHt1sszS5cgM90tFJHdKREKljYUm7qndIlMuF1o0OtdI7xyyI5BHyDyFD5AlCPwTeKTdiLpXa2H6Y1sYJhdsJ+jX0x1HFwbiplheQObPXD6hrUGA3VR1CRF5cShbQ2RnWAHYjjS2nFB7dyFZlYoqN6V6KeIxWiEbTOo11HNdxhsNWC2/blyYY+IZHvpF+baHqroMsBawIVl/+w2ANY3sLlHA56vZPViMV2avjoTnVfVhslJOtwN/B+4A7hORZ/Mdd6J73Opyf7CO0rbS4UTU4Si61fCLqnoG8KGEtoaWEertgPNt38gTqJqqKvAGsmPtZoJOcC37nVeKyL1ttBIuE7WR/M70ftk8x1gJb7cRjLgjjYg0ct8bUNX1yMz8WwObAesycnmgfLKeRK9OKzVDJa3l37tOVlh6Q3vtG33/UVW9C7gB+Atwo5HgBflxCA9GHy4GjjGqJBWpFlOGzck3JsdYWg1/KOE8DmXA3mSEV4YRBFRV901obwu/8/icZ7iKmBICg4oQ38l9aA/ruqS1biO5zTjyVdX1ge2BXYCtyNTc+gjEVnKveonVH0bzdGn0metkhexXAHZm0MN0t6peC1wKXC0i98aBQNTZysmvYygsKIAwCNU6hptKZk9KTZLm+fSiV1oNX0PWknq9iJymCAj3MMGiOYQ/tqmq022vS7F3qfGF54Czx3pMH/YXs10sKIhg1ivk412iwBwERy8R3uFIrj3w25Flqe5K1m1mYARyWyuB2KZSoDSyLYht2kEJfh+wQFVvAS4C/gxcJyLznPw6KK96QpUa3EiuGogmVnrnupeXXmk13FDVU4AvJSS8SnYi+RoRuSlnJwgWh+3ITixTfIZgkfiziDxpVSqaY923bW+ZV0Cb3alkVsGFFZknyxS8Zvse3u2E1zzFNVMpA8ld2qLaA4DXAysPQ3C7kdyO9UGvD6EEt+x7U4At7fU54H5VvRA4HbhcRObmbA8t98z2PZ4viPAuUyHyNzvnV0yF56h+4yEHbVtTTgY+n3DOBH/wnsBNOTuBRN3VNBHhDULLeFoJ5zuCvUAxiup0W8OkAgRwuYIC9hf9kezyBU9V6yGitWh6sqruqaq/Am4DTgPebWS3RVYmpRVllQ5EhJc+ygIPSXH1aCFs2J/XAD4AnAPcpqo/UdWdbJwbdvRUj5RfR/9hTkHvs0KFFN5VClJI5lTgmhfzKd6xVsO3AddFtXNTzc83DuEBb9o6vXsuUbvTyWqPABeOoZXwcNfwTAEK7+IFqqrtBESrJC4VV6UmPk54x2NbCGRLRJq2sKynql8lK3p9HtlR/Qq2wMRKbj8S3LEQYMkFBqsBHwEuIysm/llVXd3GvRnuxQQiewddmYzzREHrxGoVuva1C3qfx0ssWxZ+96QKbI5Te2gfPTHheIb32EJVVwxE28i2ktn31k3UXS2QttNFZN4YWgkPN+8ep5gSYCuVfXIUhKNojZPEScbP+PbVRYQ3kCsR0YhsvVFVTzOi+xVg/ZxaWeeVjRgc7d37gehoLIzlpsC3gb+r6vGquku4F6HDkBPfviG8jydeJ8I8WqsClQvCe2+YeGMKY/nIKOSoUcA1Lx58lSU+09PoHVvD6WT+1IEEpDcox4szmJhcixPaGLpcWSfn7AkdIvSPFLR+rVUm4Y2eqeVIq/ASqbuu8HYD4R2C6C6uqu8D/kp27H4gmQ+1EXmUBpzkdpT8xsrvEsA7gEtU9QpV/TdVnRQTXx+2viC8cws4flxHVSebGiJlrD323lMLIrzaBuEtoiTcDIprLsII7evpAVtDXUQeJksK1kTBW5grew5BtvdKNG/DXns78Bd7Pid6bQ8WdGs2rgi/Wt8ClVbi7nePh1wcTzyvMOHNEd0ZqnokcDPwK7K6ua3IsjDgyRaFkF+NxnwHsuO661X1/aq6WMjQdeLb03gqUnlTEt6VKebIb7TPsR5ZR0VNtMZolLA2GuFdUMD1zrAXFUgS7JVWwycUcDqwi6pOsW5vLVWdTVZ2k4R2hpNtza9PgEyFn3uAwS5yKef3phTT5Wy0z7FN4hMsjQMJ35MrSnjNgxRqCE5V1cPJbAvfB9axiRoiTLcslFP1QSKP9CbAL4EbVPW9oTRN8JL5kPVUF6lQDeX+xIQ3ZJ+/tsQ1qWZkZceESUfxGD6MJa2NQB7mFrART6e8Chlh81++R8qzNe1enmuBYj3BMxNOB1YDNonmznZ2L5uJWhs3gFM6QNpiYvZSwuoJYQ3ZUFVnlWjZCWO1S+I5HsbwLi91WEHCG9kXWjYZ/x9wPfAjYPXItlB3NbcSCB7poLRvCBwDXKuq+9l9bFk3O3/YemttuCOxJyz83jeUeK2h9vQbC9qY7mzDFvR8AZtxjWK8hcNZSAYYLCMpPRAk1kUkNGbQRIFT+J2vj/5tj0TPaCDQ14rIPzrQSjh8vscs6EsZSLfITi+2iuv2lzDHZzOo8Kb+DLf6tlUxwpuzL2ynqpcAxxmJCoqu2xaqO19i4rsFcKaqnqWqm1g5M/f39hb+VtAatJv5eBtFBk3RxrQCsFPidVFzYyqjJKAUoT6tVyLhnN0rhDeH4xOVB4vHabeoZvouieat5pLVah0KChoFBNJhfu9jwWzR8yskd+9JOvWdnDXkVm9bXhHCG6m6TVWdqao/Bq60h7Xpim7XEt8WsC9wnap+Q1Wn2T12tZeeSFy7KbHfLlQJWQPYtgQ1JlzXm8kqBjQSbkzh997Qxmb/dEFEcPOSk3mmJkzmKRoh6fIK4L5cc4hOj91Wqro42Ynougk6A4Z8mbnAGXTOCzuWZ6AT4/QmyzlpFLwfhVOjdxXUnv1xBi0NnrBWJuHNqbpvscn+0VzLQie63Tl/QimcKcAXyDJ5d4/UXr+v3V1q6R9kR5BSgBrznhKyi1s2Rw8rQN2tk5WtunmEjSlfAzl1AtRWdv3NEhK8tuklRcrmbl1EFgJ/SHRt8XH9xmRJ3fUECmJIWL5ARB4Ne3gHA+m/JH7ewpxeBdijyEDanidV1Q2BXaNnP+Xa+XcReTGqy+wog/Bakeqmqi6tqr+2hWD1SEnx4296wuOrdk83As5X1e9ZZB28eo7uTFybG6kxrcTz5y1mLWgVESiFPAJgb7KEzFbCNTGM3e0i8kiwUoxCeFtRolKq8mjrA2sXHJwG9Wu3HrQzhHt1UsL21GHe7EpWQSfVaUTcSlg6/NlvJGsxXCtAkTy8YBIo9n6fJlPJmwXMtyu9XXiJhDeyMDRUdSfgWuCQnE/X0VtVHQYim8MngKtUdTObA25x6N714dLER2WhMsIM4EjbLGpFFIW3r18t4ChQc2NZb6PL3XOk70g1wGCyXhFBRs2C4FUoLpmnSKbTtDl1M5kdKEXVjzBeBzGY7FlLcBrxOPBnex6bHQ6kn4jsUikD6RbwBlXdzu5NPXUQbQH7+mR17FuJRb1w3y92O0NJhDfI6jbBPmE3Y10yBdDtC/1hc2iQlZq6UlUPsUQFnPTSjWrVhYmP5eLN6cOqujrQTKw41q2u6AfIjoWbBW1Mf25zY3qWzEqSOtAAeGeHGgqMZRwOJvPvNnqwjFI4/k/VavjlNsPABgn28kBuzxKRFzpoZ8h//gsKCjSFrHtokeru98iaumjiqi81spreN3jCWgmENxwTqupiqvo7u/E1V3X7DuEoZxrwa1X9YRzh+/DQTWrV38m8vClJUfAITwN+EvyQCQPyhqquBnwnsZUh3pgeIzvpGnZjihSwFoMF+jVxkLEFsFPoGJZYVW+p6mTg33v4CDbc21PJGogMdJnylm8lnGp8zi0okG4CO6rqYSGhOtH8nmTrynvIbFKpg+jgs75YROYlCEyc8Lbp112RrMXiu6Ke8E5y6FtvbxP4OPBHVV0y9cbqSKKE/qkABSFsTvuo6sdFZJGqTkqQUCK26R1H1to2ddmisDGdb4klo21MRdVAjn/3fxbgpw2e6Q8Da9q41HowUGxZ0PIAcFmXKW8h+LubzJLW8SA3aiF+s83x1KcLQXD7vqpuFCx2CbjPIlXdCPhJAUF07LM+1bepggmv3fCGqm4AXE7W/aVh0a0fY9P3HdsWWdR7iaquXISfytFRQnRKwpa7Q2VXf9+amnSM9IaTBSPwx5Al/DQLSJyt2XNw4hhJ5d+LIKGRAvYBW8MnJTr5a6jqmsDXCiIEpe6tRuqOpzvV6d+LyKIJthJuJ5A+rYCAIDw/04AzVHW5TpLeiPusDJwFLFHAcxv7rC9yO0OBhDe64VsClwBrRWTX4QCYZHNic+BSVV3HSW9X2RpuIGuYkLqElUQE8feqeqCR3tp454ol0A6YuiiqegzwziinoAjF7AFbG2lj/MLGdUtBp2Phnv5QVbfstLIenfxNs8BpRh+0QA2thv9E1kSk3iW2hmBzObmgxhAnFhh0NoG1yaoIrRolU9fGG0BH3GctslyHok4uwhpyhvmsB9zOUADhjW74VmQJGctF2b8OBzlfb8MCootUdV0nvXSLraEF/KagTGCJgqRTVfVz1r66GTaZ0TYpI7lhQ1Jbo1a3Neq9BQbkYWM/TkQWtLkxvdyCGHg0cQ3k+Gh0cTLbUSC9dXtJBwjB0sAfGUwQrPVBWb+6iDzNoFe1WfGPHWr5Xi8it5gto5nY9nE7WaMOChifcJqxCVky9W5WL77V7lwP1adCrpLN7b2tLNh6BZH3uKzgr7w6Q0GENzqm2sQe6qULvOGO7k5mWwX4s6quFoiMD02lN0LIklieK0itijeeb6nqJaq6U9hkQg1b23wGcq/Q6CZsSNNU9WPAX8nKOBVFdsOx4wIyC0Vbx465Gsg3FnRcGXyOs4GLVfX9ItK0l8Zja0RWcq9aFIwMBFJj478zcBWDXTX7Zn8wAnVcwlbDKexLJxZ4sgDwPwWq/fVo/7lAVX+qqqvn5roMs668XH3K9qw1VPUXZCr+8gWUIMsHJteIyF9TBiZOeF+Z6dy0TOdzgJlOdh1jWHQaZA1IzlHVmdaZxkkvlVWrBkTkyWjzbhbk/w7vtQtwmapeoKrvsXUH23wauVdTVSer6uaq+mWy5JijgWULPn0KG9PpInJf1OhiLGvzZQUqOIH0LgH80oKMfUNr1jC2RmQ192pFwUgoQbidqh5LVnt4gz7cH0KDjUuBhxK1Gu50K+H5FOOrxUoPCpnv9d4CxyfYNpQsgfJvqvorVd1LVWdGpDa/rrRUdUlVfYOq/p+tK4fZ79GCAxoBfugFARiz2jaRou3TbbKu5J5dxzjtDRuSZZnubqRX3ItUzc3bnvujyWrXDhRQ3SCvytTIunPtBsxX1buAe4B/kXVtguyUaTWy48W1c+SzVjDhChv4UeOwBYSN/6ICSjcNdVTasiBjF+AeVb2ErKTaHWTl1Z4DFjJoPZkOzALWAbayn9s8dz31Pg0U56vqacARFU7WC5/rEhF5KCqNV8T4LFDVo4EfFRgQ1KJ1YQbwPns9aevK/TbPF9i8XQ5Yg6wz4fK5daVewn36B3Cm7ZcN354SEV5buIOV4VgyP4yTXcdESO8uwE9F5IN2HOoPcDVLLdVF5G5VPYFifbBxZ7KgLE8FNrXXSGiUQHTjjfAMEbnRxq45tqVWhSxx7W6yxj1FkSWJggyxwGFtC3QwojsPeMnI8WL2mjqEatjq82ZDsU3giIqT/riVcFFqa1B5fwN8hkw8KzIoiEtn1ixomwVsPwrpDPO6XsJ8qgHfFJGFlv/idoaEloZAdj8P7O9k19EB0rsIOExVD7W55baYyloSVchqts6P1EAKtsPUIzLVGOLVjDbrgRLIVlC+G8CXx5P0FRpvmHpzdkllh+oR8Qljq2QdpJYiU7pWIFPVp0bEoWE/I/1ucYuqnFxPVmZOKmhrCCcITwPndLKV8Bjm+QvANwpI0ByO6A9E61lzhHUlEM4yyq0GUn4LcJJ7dxMT3ihJbXvb9Bru2XV0MJHtx6q6viexVVflBWoich9ZcfVaieqCRBtP/lW2ohg2pl+LyN9tzJoTUAdPzqncZewTA9Emr8O8AsEdcF/hkFVOTqpovdRA5P4kIs+W0LErrPfHALdFHtsy68YPt66UXUpPgM9aIOz9DVIR3si3O43s+KHGYL1Mh6MTGflTrQ1x6Iblc4tKenlrwDfJvLN1L3g+pMfuaeCLNlbagRrINxZUumksyYT5l2OUZg5kp1n1CvKA0ppkGLkWEVkIfMLLbI1qkTpvHBYpxxij8KBSfIXMz9XwKN6RoHLDtsDHbK75/KpgIo5tTs8BR1b0iLYKhPfTVtVCJpj8E9TB/3VS2fWthu8mK88mFfJdxo1RLk/RSngMwV1dRM4nK3/o3lReZZF6ATjC7pEHBKkIr6kULVXd2DY5Lz/mSFku5muqulKkJjqq50usi8jvgT8waEnBVRgGyHyQx3RIhQkq70lkbURrHmB09V57QsUUzDCX/iAiLyVsJdxujkDNOMYTPtdfZZH6tIg8aOKjj0tChTeUivpOlKDmaoMjxVFpi6xMzNeCmujDUtkEthrw72TdwPp9cwpK2VPABzqlwkRJPc8BP3VFveubt5wFPB+V9auCyKCRv1hLzhEQEXnCKoL4XB8sCnCWiPzCrQyJCW8YYFXdAdi7H+spOkpRed+tqhu4ylvpBDYRkaeAd0ebUz8etWlUleAQEXmkwypMUHl/gqu83d5q+HHg/Iq0Gg5l524GbrKars0KnB4NiMhZwA+iKj79GkQPkDUtOXQi+QCO9hXeMMBfcDO5o0CVdxLZEY6rvNW2NgyIyIXA56K6yvSpCvMVEfmjjUmzw77pmog8A3zdCW/3PjIWuBxfkUS/sJefZMFZVYSsppWm/DRZl7pJfbiuhMonC4GDTVgQtzIkJLyhFaaqbgLsQbEdfxz0tcqrwNtUdWUvU1Zp0tswgvcdsuotk+gvRWaRXfNxIvJ1G4tGouoYdbLktRvcN92VaFrwcgGZDajMCidhL19I5sOvTLk0G6NwavI2srbD/TTfNcqTOlREru10EO2Ed+RyUYeWXHPT0X8qbxOYBrzT+4VXfyM3MvZ+4Nw+Ir2B7J4PHJKy61FIJDIyfRiDipefuHWfrWEucEbJJDNYcC4XkfuKaCU8zprfTwJvAp7sk8oNGiW/flZEjksYRDvhjevumnozDTjISYejpLn5Dm+f2BWlykK7zYOAy/qA9DbsGq8E3hy6u6XMcI+qY9wIfCkq5efoPpxQkT31hKru7dF8/wdZ/tAzPU56Y7L7VRH5rpPd4hTe8L2dgBWj0hgOR1FzU4GNgU2DOuLDUvn6vPPIFJmLe5j0LrJN6RJgb1PspKByTi3bBL9NphJOctLbla2GrwX+UZIfO9gZnmOwbXWz4nkC15PZKp/u0UCvFSWpfUVEvuZkt1jCG+wM+0QGaoeDErKI9/JSeF1VYP9FU2ROjQhZL6wfQYGZZNe2t4i8UORxsJHq4Gl/N3BTlycLap+2Gm4w2DK6VVIr4XNF5KkSWgmPN0/gemBXsiYZvZQgG8TEOnBkyAXwU81iCW9YVHeM+tY7HGW0HN61oj3oHcOT3gUichDwfducpMsX8BB81YHvichBIvJSGd7HyM/7ApmafmeXEoB+rcAS5sspJTVxermVsKnN0kXJsX8HdiDrWDcQkXe62BpVJ+uidpCI/DAou1UOQnqK8NoirsBKwLqurjlKnp+bqOp0I1M+D7uD9IqtI58E3gfMjY4iu2kh12hTehF4r4h8SlVrlufQKnGM61bzd3fgti6qWRrXLX6wj4PC24G/FBwMhgYpDwMXhxODLqoIUxeRfwFvAH5hz6V0YbAXWxhuBnYQkVPdxlCOwhtIxYbAYtHi5HAUrfAqMBtYywOvrvP0qi3gxwDbAdd0mdobVN0BMkVpWxH5rV1Tq2wFJkrq+SewC3ARmd2iWeHTkGZ0YvgZ4BsMKl3earg4dfl0EZlnc1m7zAMdTpA+RFbF50l7RltdcAoYAuiavf4H2F5EbnGyWz7hXdePkh0VOf5bxyuFdB/pjY4ibyFLgP0ig2pvVdWlZpTY8wJZU42dReTWqm1KEQF4iszr/kP73LWKqemxUj4POExEjjJBhT5uNXyGjUdRrYaDfeLEbvVQRydIdRE5HtiCzB5Si8qntipKdEMAfTuwj4h8xAKPmpPd8uvwruFD5KhIUstqPhRd3ZyiZr60bwJb2gYlOeKrFUhIIzomPQHYQkS+ExHLRlWPyK2xwZHA/sB9kZpeJvFt5Tb6K8iU8l/aZ5Y+r8n7L+DCgoK/cFJ7G3BdFVoJTzCYDiccD4nIwTbvb4oCvmYFAur8/J9jQf9WInKOqtbLtEb1GwZGIRmzomMCvyGOMr1Os/uI4Kd65lqUdGIT+a/rInIHcLCq/g/ZsfbekfLUzCXWFDHWgeQG8n0WcJSIXGU5DSGJpNUlqtdZqno58FngI8B0Bm0DUsDY5sc1eEa/BfzMyN5ilvTXSjjfNWpVXvVWw/vlxo2EtaNPDuW+ut1KEnfhtHl/Lln1kiPISlrG1x4U4CI96uE95wDHAEebBSl0sm2WuKemSBptRVbEriG8AcvbzZrsvMtREiZHc7FfrjfVMxcW+2kl+nob0QZ1GXCZqm5L1j3sAGApXm0tCARNOtSfvhWpy4FoPw2cDvyviPw1bEiAdstRY1SyrC4izwL/oaq/BA4n8zoumyMAkntNdFzDayAa1wetHfLPRWROSGaMiNakAvaYaVS41bCqngc8m5v7KdfSU+ghq2IIRG3eLwJ+parHAgfaurJrjut0cu7HBFcjghvm/53A74Dfmpof1pVWSWRXgCUSEv9a9Fx3ncJ7D7CcN51wlOx1G4iyuXu1VEu4rkeAW8my7esJ3qNm76FV2KCMUF4DXKOqXyQ7ljwI2AaYOoJyyCibVb52eEyaw1o2lywZ7TTgTBF5LFSpCepRlzc3qInIfcCRqvptG9d/s7EdGGFsheETRDX3dSjFeAGZdeFY4AwReT6naGlUbeXxAub7U1Ukd5Gt4Xk77dgv0TgQVwQQkTt78Rg9N+8XktU5PllVNwfeSlbC7zVDzP1Wbj6PZ+7H9+wR4AILLC60z1I20SVqmvNXI72tRApvnSyRsHL7tWe8OxyOcpm+eTnjjUBVVyOrt7kzmed3TWDGBN/qWTJv61/JuqRdHY4XcwS81eNjux6Z6rULsBmw6hDBxVg30QeBG8gqRVwsIvdG7zcQ1Eyf7UPeI/Gx6fyYhi52YWzt3za1eb+Tkd9VgCkTfLvHyJLQrgEuBa4LQZ7P/2oW9nc4HI4qkLOwSbVy31sVWB/YAFibLIlxFrC0kbVJEfmaBzwDPGFE7G6yNq53xgQ39549vSEF/3T+OlV1kgUTG9j4rmkkYBlgSbIqCmFsF5Kp4k+RqVj32kZ/m43tS/02rt1GevuRXIe5mLcmqepiubm/FlnvgVkWXC8WtbhfQFaH+2myU4n7gbuAO4C7ReTp3O8Oim/L53918P8B0Cm3ID94sYAAAAAASUVORK5CYII=">
+      ${(() => { let n = 0; const L = t => [...t].map(c => `<span class="lt" style="--i:${n++}">${c}</span>`).join("");
+        return `<span class="w1">${L("RENASCER")}</span><span class="w2">${L("PRAISE")}</span>
+      <span class="w3"><i class="lt" style="--i:${n}"></i>${L("JUNDIAÍ")}<i class="lt" style="--i:${n}"></i></span>`; })()}
+    </div>
+    <div class="sp-bottom">
+      ${prox ? `<div class="sp-next">Próximo culto<b>${fmtData(prox.data)} · ${esc(prox.hora)}</b></div>` : ""}
+      <button class="sp-btn" data-act="entrar-splash">${eu ? `Ver minha escala, ${esc(primeiro(eu.nome))}` : "Ver minha escala"}</button>
+    </div>
+  </div>`;
+}
+function telaLogin(){
+  let res = "";
+  if (busca.sel) {
+    const p = busca.sel;
+    return `<div class="s-head"><small>Escala dos ministros</small><h3>Olá, ${esc(primeiro(p.nome))}!</h3><small>Só para confirmar que é você.</small></div>
+      <div class="s-body">
+        <form class="card vcard" data-form="codigo">
+          <label for="login-cod" class="s-label" style="margin:0">4 últimos números do seu WhatsApp</label>
+          <input id="login-cod" name="cod" type="tel" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="0000" autocomplete="off" required style="font-size:28px;letter-spacing:.4em;text-align:center">
+          ${busca.erro ? `<div class="sub" style="color:var(--r)">${esc(busca.erro)}</div>` : ""}
+          <button class="btn big pri" style="margin-top:6px">Entrar</button>
+        </form>
+        <button class="btn ghost" data-act="voltar-busca">Não sou ${esc(primeiro(p.nome))}</button>
+      </div>`;
+  }
+  if (busca.res) {
+    if (!busca.res.length) res = `<div class="empty">Não encontramos “${esc(busca.q)}”. Confira a grafia ou fale com o líder do louvor.</div>`;
+    else res = `<div class="s-label">É você?</div>` + busca.res.map(p => `<button class="card pick" data-act="escolher" data-p="${esc(p.id)}">${avatar(p)}<span><b>${esc(p.nome)}</b><br><span class="sub">${(p.funcoes || []).join(" · ")}</span></span></button>`).join("");
+  }
+  return `<div class="s-head"><small>Escala dos ministros</small><h3>Ver minha escala</h3><small>Digite seu nome para ver quando você serve.</small></div>
+    <div class="s-body">
+      <form class="card vcard" data-form="login">
+        <label for="login-nome" class="s-label" style="margin:0">Seu nome</label>
+        <input id="login-nome" name="nome" type="text" placeholder="Ex.: Nathy" value="${esc(busca.q)}" autocomplete="off" required>
+        <button class="btn big pri" style="margin-top:6px">Buscar</button>
+      </form>${res}
+    </div>`;
+}
+function elegiveis(ev, v){
+  return state.pessoas.filter(p => p.id !== v.pessoaId && podeFazer(p, v.funcao) && !p.indisp.includes(ev.data) && !escaladoNoHorario(p.id, ev) && !(v.recusaram || []).includes(p.id));
+}
+function msgPedido(ev, v, p){
+  return `Oi, ${primeiro(p.nome)}! Não vou conseguir servir ${naFuncao(v.funcao)} do ${quando(ev)}. Você consegue me cobrir? Se puder, aceite o pedido no app da escala. Obrigado!`;
+}
+function modalTroca(ev, v){
+  const ops = elegiveis(ev, v);
+  modal(`<h3>Quem pode te substituir?</h3>
+    <p>Escolha quem você quer pedir. Depois do pedido, abre o WhatsApp para vocês conversarem. <b>Você continua na escala até a pessoa aceitar.</b></p>
+    <textarea id="motivo" placeholder="Motivo (ex.: viagem, plantão no trabalho…)" aria-label="Motivo">${esc(v.motivo || "")}</textarea>
+    <div class="subs">${ops.map(p => `<label class="sub-op"><input type="radio" name="sub" value="${p.id}">${avatar(p)}<span class="sub-n">${esc(p.nome)}</span></label>`).join("")
+      || `<div class="empty">Ninguém da sua função está livre nesse horário.</div>`}</div>
+    <div class="foot" style="justify-content:space-between;flex-wrap:wrap">
+      <button class="btn ghost sm" data-act="avisar-lider" data-e="${ev.id}" data-v="${v.id}">Não achei ninguém, avisar o líder</button>
+      <span style="display:flex;gap:8px"><button class="btn" data-act="close">Voltar</button>${ops.length ? `<button class="btn pri" data-act="pedir-troca" data-e="${ev.id}" data-v="${v.id}">Enviar pedido</button>` : ""}</span></div>`);
+}
+function viewVoluntario(){
+  const t = hoje();
+  const logado = euId && state.pessoas.some(p => p.id === euId);
+  let tela;
+  if (splash) tela = telaSplash();
+  else if (!logado && token) tela = `<div class="s-body"><div class="empty" style="padding:40px 0;text-align:center">Carregando sua escala…</div></div>`;
+  else if (!logado) tela = telaLogin();
+  else {
+    const eu = pessoa(euId);
+    const futuros = state.eventos.filter(e => e.data >= t).sort(byDate);
+    const minhas = [], trocas = [], pedidos = [];
+    futuros.forEach(e => e.vagas.forEach(v => {
+      if (v.status === "trocando" && v.pedidoPara === euId) pedidos.push([e, v]);
+      if (v.pessoaId === euId) minhas.push([e, v]);
+      else if (!ehTodos(v) && (v.status==="recusado" || v.status==="aberta") && podeFazer(eu, v.funcao) && !eu.indisp.includes(e.data) && !escaladoNoHorario(euId, e)) trocas.push([e, v]);
+    }));
+    const pend = minhas.filter(([e, v]) => v.status === "pendente").length + pedidos.length;
+    const card = ([e, v]) => { const s = situacao(e, v);
+      let btns = "";
+      if (v.status==="pendente") btns = `<div class="vbtns"><button class="btn big ok" data-act="confirmar" data-e="${e.id}" data-v="${v.id}">Confirmo</button><button class="btn big no" data-act="recusar" data-e="${e.id}" data-v="${v.id}">Não posso</button></div>`;
+      else if (v.status==="trocando" && v.pedidoPara) btns = `<div class="sub">Pedido enviado para <b>${esc(pessoa(v.pedidoPara).nome)}</b>. Você continua na escala até ele(a) aceitar.</div>
+        <div class="vbtns"><a class="btn big wa" href="${waLink(pessoa(v.pedidoPara), msgPedido(e, v, pessoa(v.pedidoPara)))}" target="_blank" rel="noopener">Conversar com ${esc(primeiro(pessoa(v.pedidoPara).nome))} no WhatsApp</a></div>
+        <div class="vbtns" style="margin-top:0"><button class="btn sm" data-act="recusar" data-e="${e.id}" data-v="${v.id}">Pedir para outra pessoa</button><button class="btn sm ghost" data-act="cancelar-troca" data-e="${e.id}" data-v="${v.id}">Vou servir</button></div>`;
+      else if (v.status==="trocando") btns = `<div class="sub" style="color:var(--r)">${esc((v.recusaram||[]).map(id => primeiro(pessoa(id).nome)).join(", "))} não pode. Escolha outra pessoa.</div>
+        <div class="vbtns"><button class="btn big pri" data-act="recusar" data-e="${e.id}" data-v="${v.id}">Escolher substituto</button></div>`;
+      else if (v.status==="confirmado") btns = `<div><button class="btn sm ghost" style="padding-left:0" data-act="recusar" data-e="${e.id}" data-v="${v.id}">Surgiu um imprevisto? Pedir troca</button></div>`;
+      else if (v.status==="recusado" && ehTodos(v)) btns = `<div class="sub">O líder foi avisado. Não precisa de substituto.</div>`;
+      else if (v.status==="recusado") btns = `<div class="sub">A equipe de ${esc(v.funcao)} foi avisada. Quando alguém assumir, a vaga sai da sua lista.</div>`;
+      return `<article class="card vcard"><div class="vtop"><span class="tag">${esc(v.funcao)}${ehTodos(v) ? " · TODAS AS VOZES" : ""}</span><span class="pill ${s.c}">${s.t}</span></div>
+        <div class="when">${fmtData(e.data)} · ${esc(e.hora)}</div>
+        <div class="sub">${esc(e.nome)}${v.status==="pendente" ? ` · responda até ${fmtDT(prazo(e))}` : ""}</div>${btns}</article>`; };
+    tela = `<div class="s-head"><div style="display:flex;justify-content:space-between;align-items:center"><small>Olá,</small><span style="display:flex;gap:6px"><button class="sair" data-act="inicio">Início</button><button class="sair" data-act="sair">Não sou eu</button></span></div>
+        <h3>${esc(primeiro(eu.nome))} 👋</h3>
+        <small>${pend ? `${pend} escala${pend>1?"s":""} esperando sua resposta` : "Tudo respondido. Obrigado!"}</small></div>
+      <div class="s-body">
+        ${pedidos.length ? `<div class="s-label" style="color:var(--y)">Pedidos de troca para você</div>
+        ${pedidos.map(([e, v]) => `<article class="card vcard pedido"><div class="vtop"><span class="tag">${esc(v.funcao)}</span><span class="sub">pedido de ${esc(primeiro(pessoa(v.pessoaId).nome))}</span></div>
+          <div class="when">${fmtData(e.data)} · ${esc(e.hora)}</div><div class="sub">${esc(e.nome)}${v.motivo ? ` · “${esc(v.motivo)}”` : ""}</div>
+          <div class="vbtns"><button class="btn big ok" data-act="aceitar-troca" data-e="${e.id}" data-v="${v.id}">Aceito cobrir</button><button class="btn big no" data-act="negar-troca" data-e="${e.id}" data-v="${v.id}">Não consigo</button></div></article>`).join("")}` : ""}
+        <div class="s-label">Minha escala</div>
+        ${minhas.map(card).join("") || `<div class="empty">Você não está escalado nos próximos cultos.</div>`}
+        <div class="s-label">Vagas abertas que você pode assumir</div>
+        ${trocas.map(([e, v]) => `<article class="card vcard"><div class="vtop"><span class="tag">${esc(v.funcao)}</span><span class="sub">${v.pessoaId ? `no lugar de ${esc(primeiro(pessoa(v.pessoaId).nome))}` : "vaga aberta"}</span></div>
+          <div class="when">${fmtData(e.data)} · ${esc(e.hora)}</div><div class="sub">${esc(e.nome)}</div>
+          <div class="vbtns"><button class="btn big pri" data-act="assumir" data-e="${e.id}" data-v="${v.id}">Assumir esta vaga</button></div></article>`).join("") || `<div class="empty">Nenhuma vaga aberta nas suas funções.</div>`}
+        <div class="s-label">Datas em que não posso servir</div>
+        <article class="card vcard">
+          <form class="formrow" data-form="indisp"><input class="grow" type="date" name="data" id="indisp-data" min="${t}" required aria-label="Data indisponível"><button class="btn">Marcar</button></form>
+          <div class="formrow" style="margin-top:6px">${[...eu.indisp].sort().map(d => `<button class="chipx" data-act="rmindisp" data-d="${d}" aria-label="Remover ${fmtData(d)}">${fmtData(d)} ✕</button>`).join("") || `<span class="empty">Nenhuma data marcada.</span>`}</div>
+        </article>
+      </div>`;
+  }
+  return `<div class="screen full">${tela}</div>`;
+}
+
+const VIEWS = {painel:viewPainel, escala:viewEscala, voluntarios:viewVoluntarios};
+function route(){ const r = location.hash.replace("#",""); return VIEWS[r] ? r : "painel"; }
+function viewLoginLider(){
+  return `<div class="lider-login card panel">
+    <h2>Área do líder</h2><p class="indisp" style="margin:0 0 6px">Entre com o e-mail e a senha de líder.</p>
+    <form data-form="login-lider" style="display:flex;flex-direction:column;gap:10px">
+      <input type="email" name="email" id="ll-email" placeholder="E-mail" autocomplete="username" value="${esc(loginEmail)}" required aria-label="E-mail">
+      <input type="password" name="senha" id="ll-senha" placeholder="Senha" autocomplete="current-password" required aria-label="Senha">
+      ${loginErro ? `<div class="sub" style="color:var(--r)">${esc(loginErro)}</div>` : ""}
+      <button class="btn pri">Entrar</button>
+    </form>
+    <a class="indisp" href="./">Sou ministro: ver minha escala</a></div>`;
+}
+let loginErro = "", loginEmail = "";
+function render(){
+  const lider = modoLider();
+  document.body.classList.toggle("min", !lider);
+  if (!lider) { $("#view").innerHTML = viewVoluntario(); return; }
+  document.querySelectorAll("#nav a").forEach(a => a.classList.toggle("on", a.dataset.r === route()));
+  $("#nav").style.display = sessao && ehLider ? "" : "none";
+  $("#btn-sair").style.display = sessao ? "" : "none";
+  if (!sessao) { $("#view").innerHTML = viewLoginLider(); return; }
+  if (ehLider === false) { $("#view").innerHTML = `<div class="card panel lider-login"><h2>Sem acesso</h2><p>Este e-mail não está cadastrado como líder.</p></div>`; return; }
+  if (!carregado) { $("#view").innerHTML = `<div class="empty">Carregando a escala…</div>`; return; }
+  $("#view").innerHTML = VIEWS[route()]();
+}
+
+/* ---------- interações ---------- */
+function toast(t){ const el = $("#toast"); el.textContent = t; el.classList.add("on"); clearTimeout(toast._t); toast._t = setTimeout(() => el.classList.remove("on"), 2200); }
+function modal(html){ $("#mbox").innerHTML = html; $("#modal").classList.add("on"); }
+function closeModal(){ $("#modal").classList.remove("on"); }
+$("#modal").addEventListener("click", e => { if (e.target.id === "modal") closeModal(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+
+document.addEventListener("click", async e => {
+  const b = e.target.closest("[data-act]"); if (!b || b.tagName === "SELECT") return;
+  const a = b.dataset.act, ev = b.dataset.e && evento(b.dataset.e), v = ev && b.dataset.v && vaga(ev, b.dataset.v);
+  if (!modoLider() && await acaoMinistro(a, b, ev, v)) return;
+  switch (a) {
+    case "checkin": v.status = b.dataset.s; commit(b.dataset.s==="faltou" ? "Falta registrada" : "Check-in atualizado"); break;
+    case "rmvaga": ev.vagas = ev.vagas.filter(x => x.id !== v.id); commit("Removido da escala"); break;
+    case "rmevento": modal(`<h3>Excluir ${esc(ev.nome)} de ${fmtData(ev.data)}?</h3><p>A escala desse culto será apagada.</p>
+        <div class="foot"><button class="btn" data-act="close">Cancelar</button><button class="btn no" data-act="rmevento-ok" data-e="${ev.id}">Excluir culto</button></div>`); break;
+    case "rmevento-ok": state.eventos = state.eventos.filter(x => x.id !== ev.id); closeModal(); commit("Culto excluído"); break;
+    case "msg": modal(`<h3>Mensagem para ${esc(primeiro(pessoa(v.pessoaId).nome))}</h3><pre class="msg">${esc(msgConvite(ev, v))}</pre>
+        <div class="foot"><button class="btn" data-act="close">Fechar</button><button class="btn pri" data-act="copy" data-e="${ev.id}" data-v="${v.id}">Copiar texto</button></div>`); break;
+    case "copy": try { await navigator.clipboard.writeText(msgConvite(ev, v)); toast("Mensagem copiada"); } catch(err) { toast("Não deu para copiar. Selecione o texto e copie."); } break;
+    case "close": closeModal(); break;
+    case "confirmar": v.status = "confirmado"; v.respondidoEm = Date.now(); commit("Presença confirmada. Obrigado! 🙌"); break;
+    case "recusar": if (!ehTodos(v)) { modalTroca(ev, v); setTimeout(() => $("#motivo")?.focus(), 50); break; }
+      modal(`<h3>Não vai poder servir?</h3><p>${ehTodos(v) ? "Conta o motivo para o líder saber." : `Conta o motivo. A gente abre uma troca e avisa a equipe de ${esc(v.funcao)}.`}</p>
+        <textarea id="motivo" placeholder="Ex.: vou viajar, plantão no trabalho…" aria-label="Motivo"></textarea>
+        <div class="foot"><button class="btn" data-act="close">Voltar</button><button class="btn no" data-act="recusar-ok" data-e="${ev.id}" data-v="${v.id}">Enviar e abrir troca</button></div>`);
+      setTimeout(() => $("#motivo")?.focus(), 50); break;
+    case "recusar-ok": { const m = $("#motivo").value.trim(); if (!m) { $("#motivo").style.borderColor = "var(--r)"; toast("Escreva o motivo para abrir a troca"); return; }
+      v.status = "recusado"; v.motivo = m; v.troca = !ehTodos(v); v.respondidoEm = Date.now(); closeModal(); commit(ehTodos(v) ? "Aviso enviado ao líder" : "Troca aberta"); break; }
+    case "pedir-troca": { const sel = document.querySelector('input[name="sub"]:checked'), m = $("#motivo").value.trim();
+      if (!sel) { toast("Escolha quem vai te substituir"); return; }
+      if (v.status !== "trocando") v.statusAntes = v.status;
+      v.status = "trocando"; v.pedidoPara = sel.value; v.motivo = m; commit();
+      const q = pessoa(sel.value);
+      modal(`<div class="enviado"><div class="ok-ico" aria-hidden="true">✓</div><h3>Pedido enviado para ${esc(primeiro(q.nome))}</h3>
+        <p>Agora é aguardar ${esc(primeiro(q.nome))} aceitar no app. Chame no WhatsApp para combinar.</p>
+        <a class="btn big wa" href="${waLink(q, msgPedido(ev, v, q))}" target="_blank" rel="noopener">Conversar com ${esc(primeiro(q.nome))} no WhatsApp</a>
+        <button class="btn ghost" data-act="close">Fechar</button></div>`); break; }
+    case "avisar-lider": { const m = $("#motivo")?.value.trim(); v.status = "recusado"; v.troca = true; v.pedidoPara = null; if (m) v.motivo = m; closeModal(); commit("O líder foi avisado e a vaga ficou aberta"); break; }
+    case "cancelar-troca": v.status = v.statusAntes || "confirmado"; v.pedidoPara = null; commit("Ok, você continua na escala"); break;
+    case "aceitar-troca": { const antes = primeiro(pessoa(v.pessoaId).nome);
+      v.substituiu = v.pessoaId; v.pessoaId = euId; v.status = "confirmado"; v.pedidoPara = null; v.motivo = ""; v.recusaram = []; v.respondidoEm = Date.now();
+      commit(`Você cobriu ${antes}. Obrigado! 🙌`); break; }
+    case "negar-troca": v.recusaram = [...(v.recusaram || []), euId]; v.pedidoPara = null; commit("Ok, avisamos que você não consegue"); break;
+    case "assumir": { const antigo = v.pessoaId ? "a vaga de " + primeiro(pessoa(v.pessoaId).nome) : "a vaga de " + v.funcao.toLowerCase();
+      v.pessoaId = euId; v.status = "confirmado"; v.motivo = ""; v.troca = false; v.respondidoEm = Date.now(); commit(`Você assumiu ${antigo}`); break; }
+    case "rmindisp": { const eu = pessoa(euId); eu.indisp = eu.indisp.filter(d => d !== b.dataset.d); commit("Data removida"); break; }
+    case "replay-logo": replayLogo(); break;
+    case "ver-todos": todosAbertos[ev.id] = !todosAbertos[ev.id]; render(); break;
+    case "tg-culto": escalaAbertos[ev.id] = !(escalaAbertos[ev.id] ?? true); render(); break;
+    case "cal-dia": diaSel = b.dataset.d; if (route() !== "escala") location.hash = "#escala"; else render(); break;
+    case "cal-mes": { const d = new Date(calMes.y, calMes.m + (+b.dataset.dir), 1); calMes = {y: d.getFullYear(), m: d.getMonth()}; render(); break; }
+    case "tg-todos-cultos": state.eventos.forEach(e => escalaAbertos[e.id] = b.dataset.v === "1"); render(); break;
+    case "tg-criar": criarAberto = !(criarAberto ?? !state.eventos.some(e => e.data >= hoje())); render(); break;
+    case "sec": abertas[b.dataset.k] = !abertas[b.dataset.k]; render(); break;
+    case "eq-add": { const k = b.dataset.slot; state.equipes[k] = state.equipes[k] || [];
+      state.equipes[k].push({funcao: b.dataset.tipo === "voz" ? "BACKING" : "VIOLÃO", pid: ""}); commit(); break; }
+    case "eq-rm": state.equipes[b.dataset.slot].splice(+b.dataset.i, 1); commit(); break;
+    case "aplicar-equipe": ev.vagas = vagasDaEquipe(ev); commit("Equipe fixa aplicada"); break;
+    case "gerar-mes": { let n = 0;
+      cultosEntre(hoje(), 28).forEach(c => { if (dtEvento(c) < new Date()) return;
+        if (!state.eventos.some(e => e.data === c.data && e.hora === c.hora)) { const ev = {id: uid(), ...c, vagas: []}; ev.vagas = vagasDaEquipe(ev); state.eventos.push(ev); n++; } });
+      commit(n ? `${n} cultos criados com as equipes fixas` : "Todos os cultos das próximas 4 semanas já existem"); break; }
+    case "entrar-splash": splash = false; render(); break;
+    case "inicio": splash = true; render(); break;
+    case "copiar-link": { const p = pessoa(b.dataset.p); try { await navigator.clipboard.writeText(linkPessoal(p)); toast("Link copiado"); } catch (err) { modal(`<h3>Link de ${esc(primeiro(p.nome))}</h3><pre class="msg">${esc(linkPessoal(p))}</pre><div class="foot"><button class="btn" data-act="close">Fechar</button></div>`); } break; }
+    case "rm-pessoa": { const p = pessoa(b.dataset.p); modal(`<h3>Remover ${esc(p.nome)} da equipe?</h3><p>Ela sai das equipes fixas e das escalas futuras fica como vaga aberta.</p>
+        <div class="foot"><button class="btn" data-act="close">Cancelar</button><button class="btn no" data-act="rm-pessoa-ok" data-p="${esc(p.id)}">Remover</button></div>`); break; }
+    case "rm-pessoa-ok": { const id = b.dataset.p;
+      state.pessoas = state.pessoas.filter(p => p.id !== id);
+      for (const k in state.equipes) state.equipes[k].forEach(r => { if (r.pid === id) r.pid = ""; });
+      state.eventos.forEach(e => { e.vagas = e.vagas.filter(v => !(v.pessoaId === id && v.grupo === "todos"));
+        e.vagas.forEach(v => { if (v.pessoaId === id) { v.pessoaId = null; v.status = e.data >= hoje() ? "aberta" : v.status; } if (v.pedidoPara === id) v.pedidoPara = null; }); });
+      closeModal(); commit("Removido da equipe"); break; }
+    case "sair-lider": await sb.auth.signOut(); sessao = null; ehLider = null; carregado = false; render(); break;
+  }
+});
+document.addEventListener("change", e => {
+  const cb = e.target.closest('input[data-act="toggle-todos"]');
+  if (cb) { state.todasVozes = state.todasVozes || {}; state.todasVozes[cb.dataset.slot] = cb.checked; commit(cb.checked ? "Todas as vozes entram nesse culto" : "Backing volta a ser por escala"); return; }
+  const s = e.target.closest("select[data-act]"); if (!s) return;
+  if (s.dataset.act === "eq-func" || s.dataset.act === "eq-pess") {
+    const r = state.equipes[s.dataset.slot][+s.dataset.i];
+    if (s.dataset.act === "eq-func") { r.funcao = s.value; if (r.pid && !podeFazer(pessoa(r.pid), r.funcao)) r.pid = ""; }
+    else r.pid = s.value;
+    commit(); return;
+  }
+  if (s.dataset.act === "subst" && s.value) {
+    const ev = evento(s.dataset.e), v = vaga(ev, s.dataset.v);
+    v.pessoaId = s.value; v.status = "pendente"; v.motivo = ""; v.troca = false;
+    commit(`${primeiro(pessoa(s.value).nome)} entrou na escala. Falta confirmar.`);
+  }
+});
+document.addEventListener("submit", async e => {
+  const f = e.target.closest("form[data-form]"); if (!f) return; e.preventDefault();
+  const fd = new FormData(f);
+  switch (f.dataset.form) {
+    case "evento": state.eventos.push({id: uid(), nome: fd.get("nome").trim(), data: fd.get("data"), hora: fd.get("hora"), vagas: []}); commit("Culto criado. Agora escale as pessoas."); break;
+    case "vaga": { const [funcao, pid] = String(fd.get("pf")).split("|"); if (!pid) return;
+      evento(f.dataset.e).vagas.push({id: uid(), funcao, pessoaId: pid, status: "pendente", motivo: "", troca: false}); commit(`${primeiro(pessoa(pid).nome)} escalado(a) em ${funcao}`); break; }
+    case "pessoa": { const funcoes = fd.getAll("f"); if (!funcoes.length) { toast("Marque pelo menos uma função"); return; }
+      let w = String(fd.get("whats") || "").replace(/\D/g, ""); if (w && w.length <= 11) w = "55" + w;
+      state.pessoas.push({id: uid(), nome: fd.get("nome").trim(), whats: w, funcoes, indisp: []}); commit("Voluntário adicionado"); break; }
+    case "login": { const q = String(fd.get("nome")).trim(); busca = {q, res: null};
+      if (norm(q).length < 2) { toast("Digite pelo menos 2 letras do seu nome"); return; }
+      const {data, error} = await sb.rpc("ministro_buscar", {q});
+      if (error) { toast("Sem conexão. Tente de novo."); return; }
+      if (data.length === 1) return escolherPessoa(data[0]);
+      busca.res = data; render(); return; }
+    case "codigo": {
+      const {data, error} = await sb.rpc("ministro_entrar", {p_id: busca.sel.id, p_final: String(fd.get("cod"))});
+      if (error) { busca.erro = error.message; render(); return; }
+      if (!data) { busca.erro = "Os números não conferem. Confira e tente de novo."; render(); return; }
+      return logarMinistro(data); }
+    case "indisp": return acaoMinistro("indisp-add", {dataset: {d: fd.get("data")}});
+    case "login-lider": {
+      loginErro = ""; loginEmail = String(fd.get("email"));
+      const {error} = await sb.auth.signInWithPassword({email: fd.get("email"), password: fd.get("senha")});
+      if (error) { loginErro = "E-mail ou senha incorretos."; render(); }
+      return; }
+  }
+});
+window.addEventListener("hashchange", () => {
+  if (!modoLider()) { splash = true; if (carregado) { carregado = false; foto = null; state = {pessoas: [], eventos: [], equipes: {}, todasVozes: {}}; } if (token) carregarMinistro(); }
+  else if (sessao && !carregado) iniciarLider(sessao);
+  render();
+});
+/* ao sair do app/aba e voltar, a tela dos ministros recomeça pela apresentação */
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) return;
+  if (!modoLider()) { if (!$("#modal").classList.contains("on")) { splash = true; render(); } if (token) carregarMinistro(); }
+  else if (sessao && ehLider) atualizarLider();
+});
+
+/* ===================== MINISTROS (sem login, com código pessoal) ===================== */
+function logarMinistro(tk){
+  token = tk; LS.set("escala_token", tk); busca = {q: "", res: null};
+  history.replaceState(null, "", "?t=" + tk);   /* o ícone salvo na tela do celular guarda o link pessoal */
+  return carregarMinistro().then(() => { splash = false; render(); });
+}
+function escolherPessoa(p){
+  if (p.precisa_codigo) { busca.sel = p; busca.erro = ""; render(); setTimeout(() => $("#login-cod")?.focus(), 50); return; }
+  return sb.rpc("ministro_entrar", {p_id: p.id, p_final: ""}).then(({data}) => data ? logarMinistro(data) : toast("Não foi possível entrar."));
+}
+const datas = arr => (arr || []).map(d => String(d).slice(0, 10));
+async function carregarMinistro(){
+  if (!token) return;
+  const {data, error} = await sb.rpc("ministro_dados", {p_token: token});
+  if (error) {
+    if (/inválido/i.test(error.message)) { token = null; LS.set("escala_token", null); LS.set("escala_nome", null); render(); }
+    return;
+  }
+  state.pessoas = data.pessoas.map(p => ({...p, whats: p.whats || "", indisp: datas(p.indisp)}));
+  state.eventos = data.eventos.map(e => ({...e, data: String(e.data).slice(0, 10),
+    vagas: e.vagas.map(v => ({...v, recusaram: v.recusaram || []}))}));
+  euId = data.eu;
+  LS.set("escala_nome", pessoa(euId).nome);
+  if (location.search.indexOf(token) < 0) history.replaceState(null, "", "?t=" + token);
+  if (!$("#modal").classList.contains("on") && !modoLider()) render();
+}
+async function rpcAcao(acao, vagaId, extra = {}){
+  const {error} = await sb.rpc("ministro_acao", {p_token: token, p_acao: acao, p_vaga: vagaId || null, p_extra: extra});
+  if (error) { toast(error.message || "Não foi possível salvar. Tente de novo."); await carregarMinistro(); return false; }
+  await carregarMinistro(); return true;
+}
+/* devolve true quando a ação foi tratada aqui (tela dos ministros) */
+async function acaoMinistro(a, b, ev, v){
+  switch (a) {
+    case "entrar-splash": splash = false; if (token && !euId) await carregarMinistro(); render(); return true;
+    case "escolher": { const p = (busca.res || []).find(x => x.id === b.dataset.p); if (p) escolherPessoa(p); return true; }
+    case "voltar-busca": busca.sel = null; render(); return true;
+    case "sair": token = null; euId = null; LS.set("escala_token", null); LS.set("escala_nome", null); busca = {q: "", res: null};
+      history.replaceState(null, "", location.pathname); render(); return true;
+    case "confirmar": if (await rpcAcao("confirmar", v.id)) toast("Presença confirmada. Obrigado! 🙌"); return true;
+    case "recusar-ok": { const m = $("#motivo").value.trim(); if (!m) { $("#motivo").style.borderColor = "var(--r)"; toast("Escreva o motivo"); return true; }
+      closeModal(); if (await rpcAcao("recusar_todos", v.id, {motivo: m})) toast("Aviso enviado ao líder"); return true; }
+    case "pedir-troca": { const sel = document.querySelector('input[name="sub"]:checked'), m = $("#motivo").value.trim();
+      if (!sel) { toast("Escolha quem vai te substituir"); return true; }
+      const q = pessoa(sel.value), evId = ev.id, vId = v.id;
+      closeModal();
+      if (!(await rpcAcao("pedir_troca", vId, {para: sel.value, motivo: m}))) return true;
+      const ev2 = evento(evId), v2 = ev2 && vaga(ev2, vId);
+      modal(`<div class="enviado"><div class="ok-ico" aria-hidden="true">✓</div><h3>Pedido enviado para ${esc(primeiro(q.nome))}</h3>
+        <p>Agora é aguardar ${esc(primeiro(q.nome))} aceitar no app. Chame no WhatsApp para combinar.</p>
+        ${q.whats && ev2 && v2 ? `<a class="btn big wa" href="${waLink(q, msgPedido(ev2, v2, q))}" target="_blank" rel="noopener">Conversar com ${esc(primeiro(q.nome))} no WhatsApp</a>` : ""}
+        <button class="btn ghost" data-act="close">Fechar</button></div>`);
+      return true; }
+    case "avisar-lider": { const m = $("#motivo")?.value.trim(); closeModal();
+      if (await rpcAcao("avisar_lider", v.id, {motivo: m || ""})) toast("O líder foi avisado e a vaga ficou aberta"); return true; }
+    case "cancelar-troca": if (await rpcAcao("cancelar_troca", v.id)) toast("Ok, você continua na escala"); return true;
+    case "aceitar-troca": { const antes = primeiro(pessoa(v.pessoaId).nome);
+      if (await rpcAcao("aceitar_troca", v.id)) toast(`Você cobriu ${antes}. Obrigado! 🙌`); return true; }
+    case "negar-troca": if (await rpcAcao("negar_troca", v.id)) toast("Ok, avisamos que você não consegue"); return true;
+    case "assumir": if (await rpcAcao("assumir", v.id)) toast("Vaga assumida. Obrigado! 🙌"); return true;
+    case "rmindisp": if (await rpcAcao("indisp_rm", null, {data: b.dataset.d})) toast("Data removida"); return true;
+    case "indisp-add": if (await rpcAcao("indisp_add", null, {data: b.dataset.d})) toast("Data marcada como indisponível"); return true;
+  }
+  return false;
+}
+
+/* ===================== LÍDER (login + sincronização com o banco) ===================== */
+const pRow = p => ({id: p.id, nome: p.nome, whats: p.whats || "", funcoes: p.funcoes, indisp: p.indisp || [], obs: p.obs || null});
+const eRow = e => ({id: e.id, nome: e.nome, data: e.data, hora: e.hora});
+const vRow = (e, v) => ({id: v.id, evento_id: e.id, funcao: v.funcao, pessoa_id: v.pessoaId || null, status: v.status,
+  motivo: v.motivo || "", troca: !!v.troca, pedido_para: v.pedidoPara || null, recusaram: v.recusaram || [],
+  status_antes: v.statusAntes || null, grupo: v.grupo || null, substituiu: v.substituiu || null,
+  respondido_em: v.respondidoEm ? new Date(v.respondidoEm).toISOString() : null});
+function linhasBanco(){
+  const slots = new Set([...Object.keys(state.equipes || {}), ...Object.keys(state.todasVozes || {})]);
+  return {
+    pessoas: state.pessoas.map(pRow),
+    eventos: state.eventos.map(eRow),
+    vagas: state.eventos.flatMap(e => e.vagas.map(v => vRow(e, v))),
+    equipes: [...slots].map(k => ({slot: k, linhas: (state.equipes[k] || []).map(r => ({funcao: r.funcao, pid: r.pid || ""})), todas_vozes: !!(state.todasVozes || {})[k]}))
+  };
+}
+const CHAVE = {pessoas: "id", eventos: "id", vagas: "id", equipes: "slot"};
+let foto = null;   /* última versão salva no banco, para mandar só o que mudou */
+function tirarFoto(){
+  const l = linhasBanco(); foto = {};
+  for (const t in l) foto[t] = new Map(l[t].map(r => [r[CHAVE[t]], JSON.stringify(r)]));
+}
+async function carregarTudo(){
+  const [p, e, v, q] = await Promise.all([
+    sb.from("pessoas").select("id,nome,whats,funcoes,indisp,obs,token").order("nome"),
+    sb.from("eventos").select("*"),
+    sb.from("vagas").select("*"),
+    sb.from("equipes").select("*")]);
+  const erro = p.error || e.error || v.error || q.error; if (erro) throw erro;
+  const porEv = {};
+  v.data.forEach(r => (porEv[r.evento_id] = porEv[r.evento_id] || []).push({id: r.id, funcao: r.funcao, pessoaId: r.pessoa_id,
+    status: r.status, motivo: r.motivo, troca: r.troca, pedidoPara: r.pedido_para, recusaram: r.recusaram || [],
+    statusAntes: r.status_antes, grupo: r.grupo, substituiu: r.substituiu, respondidoEm: r.respondido_em}));
+  state = {
+    pessoas: p.data.map(r => ({...r, whats: r.whats || "", indisp: datas(r.indisp)})),
+    eventos: e.data.map(r => ({id: r.id, nome: r.nome, data: String(r.data).slice(0, 10), hora: r.hora, vagas: porEv[r.id] || []})),
+    equipes: Object.fromEntries(q.data.map(r => [r.slot, r.linhas || []])),
+    todasVozes: Object.fromEntries(q.data.map(r => [r.slot, r.todas_vozes]))
+  };
+  tirarFoto(); carregado = true;
+}
+let salvando = false, deNovo = false;
+async function sincronizar(){
+  if (!foto) return;
+  if (salvando) { deNovo = true; return; }
+  salvando = true; setSync("saving");
+  try {
+    const l = linhasBanco(), mud = {}, del = {};
+    let novaPessoa = false;
+    for (const t in l) {
+      const atuais = new Map(l[t].map(r => [r[CHAVE[t]], r]));
+      mud[t] = l[t].filter(r => foto[t].get(r[CHAVE[t]]) !== JSON.stringify(r));
+      del[t] = [...foto[t].keys()].filter(k => !atuais.has(k));
+      if (t === "pessoas" && mud[t].some(r => !foto[t].has(r.id))) novaPessoa = true;
+    }
+    const up = async t => { if (mud[t].length) { const {error} = await sb.from(t).upsert(mud[t], {onConflict: CHAVE[t]}); if (error) throw error; } };
+    const rm = async t => { if (del[t].length) { const {error} = await sb.from(t).delete().in(CHAVE[t], del[t]); if (error) throw error; } };
+    await up("pessoas"); await up("eventos"); await up("equipes");
+    await rm("vagas"); await up("vagas"); await rm("eventos"); await rm("equipes"); await rm("pessoas");
+    tirarFoto(); setSync("ok");
+    if (novaPessoa) { await carregarTudo(); render(); }   /* pega o link pessoal gerado pelo banco */
+  } catch (err) {
+    console.error(err); setSync("err"); toast("Não foi possível salvar. Recarregando…");
+    try { await carregarTudo(); render(); } catch (e2) {}
+  }
+  salvando = false;
+  if (deNovo) { deNovo = false; sincronizar(); }
+}
+async function atualizarLider(){
+  if (salvando || deNovo || $("#modal").classList.contains("on")) return;
+  const ativo = document.activeElement;
+  if (ativo && /INPUT|TEXTAREA|SELECT/.test(ativo.tagName)) return;
+  const antes = foto && JSON.stringify([...foto.vagas.values(), ...foto.pessoas.values(), ...foto.eventos.values()]);
+  try { await carregarTudo(); } catch (e) { setSync("err"); return; }
+  const depois = JSON.stringify([...foto.vagas.values(), ...foto.pessoas.values(), ...foto.eventos.values()]);
+  setSync("ok"); if (antes !== depois) render();
+}
+setInterval(() => { if (!document.hidden && modoLider() && sessao && ehLider) atualizarLider(); }, 30000);
+function setSync(kind){
+  const el = $("#sync"); el.className = "sync" + (kind==="ok" ? " ok" : kind==="err" ? " err" : "");
+  el.querySelector("span").textContent = kind==="ok" ? "Salvo" : kind==="err" ? "Erro ao salvar" : kind==="saving" ? "Salvando…" : "Conectando…";
+}
+async function iniciarLider(s){
+  sessao = s; euId = null;
+  if (!sessao) { ehLider = null; carregado = false; render(); return; }
+  const {data} = await sb.from("lideres").select("email");
+  ehLider = !!(data && data.length);
+  render();
+  if (ehLider && !carregado) { try { await carregarTudo(); setSync("ok"); } catch (e) { setSync("err"); toast("Não foi possível carregar a escala."); } render(); }
+}
+sb.auth.onAuthStateChange((evento, s) => {
+  const mudou = (s && s.user && s.user.id) !== (sessao && sessao.user && sessao.user.id);
+  sessao = s;
+  if (!s) { ehLider = null; carregado = false; }
+  /* não chamar o banco dentro deste aviso: o Supabase recomenda sair do callback antes */
+  setTimeout(() => { if (!modoLider()) return; if (s && (mudou || !carregado)) { carregado = false; iniciarLider(s); } else render(); }, 0);
+});
+/* intro: replay automático a cada ~4 s enquanto a tela inicial estiver visível */
+const INTRO_LOOP_MS = 4000;
+function replayLogo(){
+  document.querySelectorAll("#wordmark .lt").forEach(el => { el.style.animation = "none"; void el.offsetWidth; el.style.animation = ""; });
+}
+setInterval(() => { if (document.getElementById("wordmark") && !document.hidden) replayLogo(); }, INTRO_LOOP_MS);
+function commit(msg){ render(); if (msg) toast(msg); sincronizar(); }
+
+render();
+sb.rpc("proximo_culto").then(({data}) => { if (data) { proxCulto = {...data, data: String(data.data).slice(0, 10)}; if (!modoLider() && splash) render(); } });
+if (token) carregarMinistro();
+</script>
+</body>
+</html>
